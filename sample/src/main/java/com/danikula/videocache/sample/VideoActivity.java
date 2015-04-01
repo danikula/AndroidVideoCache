@@ -1,7 +1,7 @@
 package com.danikula.videocache.sample;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.VideoView;
@@ -15,7 +15,7 @@ import com.danikula.videocache.ProxyCacheException;
 
 import java.io.File;
 
-public class VideoActivity extends ActionBarActivity implements CacheListener {
+public class VideoActivity extends Activity implements CacheListener {
 
     private static final String LOG_TAG = "VideoActivity";
     private static final String VIDEO_CACHE_NAME = "devbytes.mp4";

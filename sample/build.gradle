@@ -1,3 +1,7 @@
+repositories {
+    maven { url 'https://github.com/danikula/AndroidVideoCache/raw/mvn-repo' }
+}
+
 apply plugin: 'com.android.application'
 
 android {
@@ -14,6 +18,5 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:22.0.0'
-    compile project(':library')
+    compile('com.danikula:videocache:1.0')
 }
