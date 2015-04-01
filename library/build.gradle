@@ -1,0 +1,5 @@
+apply plugin: 'java'
+
+dependencies {
+    compile 'com.google.android:android:1.6_r2'
+}
