@@ -20,7 +20,7 @@ public class FileCache implements Cache {
 
     public FileCache(File file) throws ProxyCacheException {
         try {
-            Preconditions.checkNotNull(file);
+            checkNotNull(file);
             boolean partialFile = isTempFile(file);
             boolean completed = file.exists() && !partialFile;
             if (completed) {
@@ -103,6 +103,15 @@ public class FileCache implements Cache {
     @Override
     public synchronized boolean isCompleted() {
         return !isTempFile(file);
+    }
+
+    /**
+     * Returns file to be used fo caching. It may as original file passed in constructor as some temp file for not completed cache.
+     *
+     * @return file for caching.
+     */
+    public File getFile() {
+        return file;
     }
 
     private boolean isTempFile(File file) {
