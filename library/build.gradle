@@ -1,5 +1,24 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.2.10'
+    }
+}
+
 apply plugin: 'java'
+apply plugin: 'bintray-release'
 
 dependencies {
     compile 'com.google.android:android:1.6_r2'
+}
+
+publish {
+    userOrg = 'alexeydanilov'
+    groupId = 'com.danikula'
+    artifactId = 'videocache'
+    publishVersion = '1.0.1'
+    description = 'Cache support for android VideoView'
+    website = 'https://github.com/danikula/AndroidVideoCache'
 }

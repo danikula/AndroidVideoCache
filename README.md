@@ -1,20 +1,17 @@
-Video cache support for Android
-==============
+# Video cache support for Android
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AndroidVideoCache-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1751)
 
-Why AndroidVideoCache?
-----
+## Why AndroidVideoCache?
 Because android MediaPlayer doesn't cache video while streaming.
 
-How to use?
-----
+## How to use?
 Just add link to repository and dependency:
 ```
 repositories {
-    maven { url 'https://github.com/danikula/AndroidVideoCache/raw/mvn-repo' }
+    maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 ...
-compile 'com.danikula:videocache:1.0'
+compile 'com.danikula:videocache:1.0.1'
 ```
 
 and use proxy for caching video:
@@ -47,8 +44,10 @@ public void onDestroy() {
 
 See `sample` app for details.
 
-License
-----
+## Where published?
+[Here](https://bintray.com/alexeydanilov/maven/videocache/view)
+
+## License
 
     Copyright 2014-2015 Alexey Danilov
 
