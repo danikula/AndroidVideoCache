@@ -1,12 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.github.jcandksolutions.gradle:android-unit-test:2.1.1'
-    }
-}
-
 repositories {
     maven { url 'https://github.com/danikula/android-garden/raw/mvn-repo' }
 }
@@ -20,7 +11,7 @@ android {
     defaultConfig {
         applicationId 'com.danikula.proxycache.test'
         minSdkVersion 9
-        targetSdkVersion 18 // Robolectric doesn't support API 19-21
+        targetSdkVersion 22
         versionCode 1
         versionName '0.1'
     }
@@ -29,11 +20,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 }
-
-apply plugin: 'android-unit-test'
-
-// to fix AS 0.8.9+ issue (https://github.com/evant/android-studio-unit-test-plugin Troubleshooting)
-tasks.findByName("assembleDebug").dependsOn("testDebugClasses")
 
 dependencies {
     compile project (':library')
