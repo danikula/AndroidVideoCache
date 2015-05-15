@@ -10,8 +10,9 @@ Just add link to repository and dependency:
 repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
-...
-compile 'com.danikula:videocache:1.0.1'
+dependencies {
+    compile 'com.danikula:videocache:1.0.1'
+}
 ```
 
 and use proxy for caching video:
