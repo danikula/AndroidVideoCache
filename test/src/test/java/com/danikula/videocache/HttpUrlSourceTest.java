@@ -1,9 +1,11 @@
 package com.danikula.videocache;
 
+import com.danikula.videocache.test.BuildConfig;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayOutputStream;
@@ -20,8 +22,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@Config(manifest = "src/main/AndroidManifest.xml")
-@RunWith(RobolectricTestRunner.class)
+@RunWith(RobolectricGradleTestRunner.class)
+@Config(constants = BuildConfig.class, emulateSdk = BuildConfig.MIN_SDK_VERSION)
 public class HttpUrlSourceTest {
 
     @Test

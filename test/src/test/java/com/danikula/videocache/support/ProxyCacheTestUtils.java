@@ -4,7 +4,7 @@ import com.danikula.android.garden.io.IoUtils;
 import com.danikula.videocache.HttpProxyCache;
 import com.google.common.io.Files;
 
-import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,7 +49,7 @@ public class ProxyCacheTestUtils {
     }
 
     public static byte[] loadAssetFile(String name) throws IOException {
-        InputStream in = Robolectric.application.getResources().getAssets().open(name);
+        InputStream in = RuntimeEnvironment.application.getResources().getAssets().open(name);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IoUtils.copy(in, out);
         IoUtils.closeSilently(in);
@@ -62,7 +62,7 @@ public class ProxyCacheTestUtils {
     }
 
     public static File newCacheFile() {
-        return new File(Robolectric.application.getCacheDir(), UUID.randomUUID().toString());
+        return new File(RuntimeEnvironment.application.getCacheDir(), UUID.randomUUID().toString());
     }
 
     public static byte[] generate(int capacity) {

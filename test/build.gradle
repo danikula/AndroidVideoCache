@@ -1,19 +1,27 @@
 repositories {
-    maven { url 'https://github.com/danikula/android-garden/raw/mvn-repo' }
+    maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
+    compileSdkVersion 22
     buildToolsVersion '22.0.1'
 
     defaultConfig {
         applicationId 'com.danikula.proxycache.test'
-        minSdkVersion 9
+        minSdkVersion 16
         targetSdkVersion 22
         versionCode 1
         versionName '0.1'
+    }
+    buildTypes {
+        debug {
+            buildConfigField "int", "MIN_SDK_VERSION", Integer.toString(android.defaultConfig.minSdkVersion.apiLevel)
+        }
+        release {
+            buildConfigField "int", "MIN_SDK_VERSION", Integer.toString(android.defaultConfig.minSdkVersion.apiLevel)
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -24,11 +32,14 @@ android {
 dependencies {
     compile project (':library')
 
-    testCompile 'junit:junit:4.10'
-    testCompile 'org.robolectric:robolectric:2.4'
+    testCompile 'junit:junit:4.12'
+    testCompile('org.robolectric:robolectric:3.0-rc2') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
     testCompile 'com.squareup:fest-android:1.0.0'
     testCompile 'com.google.guava:guava-jdk5:17.0'
-    testCompile('com.danikula:android-garden:2.0.11-SNAPSHOT') {
+    testCompile('com.danikula:android-garden:2.0.13') {
         exclude group: 'com.google.android'
     }
 }
