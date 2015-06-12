@@ -39,7 +39,7 @@ dependencies {
     }
     testCompile 'com.squareup:fest-android:1.0.0'
     testCompile 'com.google.guava:guava-jdk5:17.0'
-    testCompile('com.danikula:android-garden:2.0.13') {
+    testCompile('com.danikula:android-garden:2.1.4') {
         exclude group: 'com.google.android'
     }
 }
