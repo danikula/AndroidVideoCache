@@ -7,8 +7,16 @@ buildscript {
     }
 }
 
+apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'bintray-release'
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
 
 dependencies {
     compile 'com.google.android:android:1.6_r2'
