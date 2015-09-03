@@ -1,8 +1,19 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
+
 repositories {
     maven { url 'https://github.com/danikula/AndroidVideoCache/raw/mvn-repo' }
+    maven { url 'https://github.com/dahlgren/vpi-aar/raw/master' }
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 23
@@ -17,6 +28,17 @@ android {
     }
 }
 
+apt {
+    arguments {
+        androidManifestFile variant.outputs[0].processResources.manifestFile
+        resourcePackageName android.defaultConfig.applicationId
+    }
+}
+
 dependencies {
-    compile('com.danikula:videocache:1.0')
+    compile 'com.android.support:support-v4:23.0.0'
+    compile 'org.androidannotations:androidannotations-api:3.3.2'
+    compile 'com.danikula:videocache:1.0'
+    compile 'com.viewpagerindicator:library:2.4.2-SNAPSHOT@aar'
+    apt 'org.androidannotations:androidannotations:3.3.2'
 }
