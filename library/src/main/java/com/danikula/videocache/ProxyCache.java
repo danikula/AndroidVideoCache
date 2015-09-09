@@ -2,6 +2,7 @@ package com.danikula.videocache;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,7 +26,7 @@ public class ProxyCache {
     private final Source source;
     private final Cache cache;
     private final Object wc;
-    private final Handler handler;
+    private final ListenerHandler handler;
     private volatile Thread sourceReaderThread;
     private volatile boolean stopped;
     private final AtomicInteger readSourceErrorsCount;
@@ -37,7 +38,7 @@ public class ProxyCache {
         this.cache = checkNotNull(cache);
         this.logEnabled = logEnabled;
         this.wc = new Object();
-        this.handler = new Handler(Looper.getMainLooper());
+        this.handler = new ListenerHandler();
         this.readSourceErrorsCount = new AtomicInteger();
     }
 
@@ -93,7 +94,6 @@ public class ProxyCache {
     }
 
     private void readSourceAsync() throws ProxyCacheException {
-
         boolean readingInProgress = sourceReaderThread != null && sourceReaderThread.getState() != Thread.State.TERMINATED;
         if (!stopped && !cache.isCompleted() && !readingInProgress) {
             sourceReaderThread = new Thread(new SourceReaderRunnable(), "Source reader for ProxyCache");
@@ -111,15 +111,8 @@ public class ProxyCache {
         }
     }
 
-    private void notifyNewCacheDataAvailable(final int cachePercentage) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (cacheListener != null) {
-                    cacheListener.onCacheDataAvailable(cachePercentage);
-                }
-            }
-        });
+    private void notifyNewCacheDataAvailable(int cachePercentage) {
+        handler.deliverCachePercentage(cachePercentage);
 
         synchronized (wc) {
             wc.notifyAll();
@@ -165,7 +158,7 @@ public class ProxyCache {
 
     protected final void onError(final Throwable e) {
         Log.e(LOG_TAG, "ProxyCache error", e);
-        handler.post(new ErrorDeliverer(e));
+        handler.deliverError(e);
     }
 
     protected boolean isLogEnabled() {
@@ -180,22 +173,53 @@ public class ProxyCache {
         }
     }
 
-    private class ErrorDeliverer implements Runnable {
+    private final class ListenerHandler extends Handler {
 
-        private final Throwable error;
+        private static final int MSG_ERROR = 1;
+        private static final int MSG_CACHE_PERCENTAGE = 2;
 
-        public ErrorDeliverer(Throwable error) {
-            this.error = error;
+        public ListenerHandler() {
+            super(Looper.getMainLooper());
+        }
+
+        public void deliverCachePercentage(int percents) {
+            if (cacheListener != null) {
+                send(MSG_CACHE_PERCENTAGE, percents, null);
+            }
+        }
+
+        public void deliverError(Throwable error) {
+            if (isFatalError(error) || cacheListener != null) {
+                send(MSG_ERROR, 0, error);
+            }
+        }
+
+        private boolean isFatalError(Throwable error) {
+            return !(error instanceof ProxyCacheException);
+        }
+
+        private void send(int what, int arg1, Object data) {
+            Message message = obtainMessage(what);
+            message.arg1 = arg1;
+            message.obj = data;
+            sendMessage(message);
         }
 
         @Override
-        public void run() {
-            if (error instanceof ProxyCacheException) {
-                if (cacheListener != null) {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_CACHE_PERCENTAGE:
+                    cacheListener.onCacheDataAvailable(msg.arg1);
+                    break;
+                case MSG_ERROR:
+                    Throwable error = (Throwable) msg.obj;
+                    if (isFatalError(error)) {
+                        throw new RuntimeException("Unexpected error!", error);
+                    }
                     cacheListener.onError((ProxyCacheException) error);
-                }
-            } else {
-                throw new RuntimeException("Unexpected error!", error);
+                    break;
+                default:
+                    throw new RuntimeException("Unknown message " + msg);
             }
         }
     }

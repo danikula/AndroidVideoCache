@@ -1,7 +1,6 @@
 package com.danikula.videocache.sample;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
 import org.androidannotations.annotations.EActivity;
@@ -22,10 +21,9 @@ public class MultipleVideosActivity extends FragmentActivity {
     }
 
     private void addVideoFragment(Video video, int containerViewId) {
-        Fragment fragment = VideoFragment.build(video.url, video.getCacheFile(this).getAbsolutePath());
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(containerViewId, fragment)
+                .add(containerViewId, VideoFragment.build(this, video))
                 .commit();
     }
 }
