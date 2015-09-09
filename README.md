@@ -2,7 +2,8 @@
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AndroidVideoCache-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1751)
 
 ## Why AndroidVideoCache?
-Because android MediaPlayer doesn't cache video while streaming.
+Because there is no sense to download video a lot of times while streaming!
+`AndroidVideoCache` allows to add caching support to your `VideoView/MediaPlayer`, [ExoPlayer](https://github.com/danikula/ExoPlayer/commit/6110be8559f003f98020ada8c5e09691b67aaff4) or any another player with help of single line!
 
 ## How to use?
 Just add link to repository and dependency:
@@ -11,42 +12,65 @@ repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 dependencies {
-    compile 'com.danikula:videocache:1.0.1'
+    compile 'com.danikula:videocache:2.0.7'
 }
 ```
 
-and use proxy for caching video:
+and use url from proxy instead of original url for adding caching:
 
 ```java
 @Override
 protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    ...
-    try {
-        Cache cache = new FileCache(new File(getExternalCacheDir(), VIDEO_CACHE_NAME));
-        HttpUrlSource source = new HttpUrlSource(VIDEO_URL);
-        proxyCache = new HttpProxyCache(source, cache);
-        videoView.setVideoPath(proxyCache.getUrl());
-        videoView.start();
-    } catch (ProxyCacheException e) {
-        Log.e(LOG_TAG, "Error playing video", e);
-    }
+super.onCreate(savedInstanceState);
+
+    HttpProxyCacheServer proxy = getProxy();
+    String proxyUrl = proxy.getProxyUrl(VIDEO_URL);
+    videoView.setVideoPath(proxyUrl);
 }
 
-@Override
-public void onDestroy() {
-    super.onDestroy();
+private HttpProxyCacheServer getProxy() {
+    // should return single instance of HttpProxyCacheServer shared for whole app.
+}
+```
 
-    if (proxyCache != null) {
-        proxyCache.shutdown();
+To guarantee normal work you should use **single** instance of `HttpProxyCacheServer` for whole app.
+For example you can store shared proxy on your `Application`:
+
+```java
+public class App extends Application {
+
+    private HttpProxyCacheServer proxy;
+
+    public static HttpProxyCacheServer getProxy(Context context) {
+        App app = (App) context.getApplicationContext();
+        return app.proxy == null ? (app.proxy = app.newProxy()) : app.proxy;
+    }
+
+    private HttpProxyCacheServer newProxy() {
+        FileNameGenerator nameGenerator = new Md5FileNameGenerator(getExternalCacheDir());
+        return new HttpProxyCacheServer(nameGenerator);
     }
 }
 ```
 
+or use [simple factory](http://pastebin.com/38uNkgBT).
+More preferable way is use some dependency injector like [Dagger](http://square.github.io/dagger/).
+
 See `sample` app for details.
+
+## Whats new in 2.0?
+- simpler api
+- single cache for multiple clients
+- cache file name policy
+- more powerful listener
+- more samples
+- less log flood
 
 ## Where published?
 [Here](https://bintray.com/alexeydanilov/maven/videocache/view)
+
+## Questions?
+[danikula@gmail.com](mailto:danikula@gmail.com)
 
 ## License
 
