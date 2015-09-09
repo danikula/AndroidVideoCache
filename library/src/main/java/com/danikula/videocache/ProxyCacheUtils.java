@@ -5,6 +5,9 @@ import android.webkit.MimeTypeMap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 import static com.danikula.videocache.Preconditions.checkArgument;
@@ -56,5 +59,19 @@ class ProxyCacheUtils {
         }
     }
 
+    static String encode(String url) {
+        try {
+            return URLEncoder.encode(url, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Error encoding url", e);
+        }
+    }
 
+    static String decode(String url) {
+        try {
+            return URLDecoder.decode(url, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Error decoding url", e);
+        }
+    }
 }

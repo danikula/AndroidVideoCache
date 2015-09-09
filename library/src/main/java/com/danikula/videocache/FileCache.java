@@ -15,22 +15,16 @@ public class FileCache implements Cache {
 
     private static final String TEMP_POSTFIX = ".download";
 
+    public File file;
     private RandomAccessFile dataFile;
-    private File file;
 
     public FileCache(File file) throws ProxyCacheException {
         try {
             checkNotNull(file);
-            boolean partialFile = isTempFile(file);
-            boolean completed = file.exists() && !partialFile;
-            if (completed) {
-                this.dataFile = new RandomAccessFile(file, "r");
-                this.file = file;
-            } else {
-                ProxyCacheUtils.createDirectory(file.getParentFile());
-                this.file = partialFile ? file : new File(file.getParentFile(), file.getName() + TEMP_POSTFIX);
-                this.dataFile = new RandomAccessFile(this.file, "rw");
-            }
+            ProxyCacheUtils.createDirectory(file.getParentFile());
+            boolean completed = file.exists();
+            this.file = completed ? file : new File(file.getParentFile(), file.getName() + TEMP_POSTFIX);
+            this.dataFile = new RandomAccessFile(this.file, completed ? "r" : "rw");
         } catch (IOException e) {
             throw new ProxyCacheException("Error using file " + file + " as disc cache", e);
         }
@@ -41,7 +35,7 @@ public class FileCache implements Cache {
         try {
             return (int) dataFile.length();
         } catch (IOException e) {
-            throw new ProxyCacheException("Error reading length of file " + dataFile, e);
+            throw new ProxyCacheException("Error reading length of file " + file, e);
         }
     }
 
@@ -117,4 +111,5 @@ public class FileCache implements Cache {
     private boolean isTempFile(File file) {
         return file.getName().endsWith(TEMP_POSTFIX);
     }
+
 }

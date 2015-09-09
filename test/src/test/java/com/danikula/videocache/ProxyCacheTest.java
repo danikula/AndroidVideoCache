@@ -1,5 +1,7 @@
 package com.danikula.videocache;
 
+import com.danikula.android.garden.io.IoUtils;
+import com.danikula.videocache.support.AngryHttpUrlSource;
 import com.danikula.videocache.support.PhlegmaticByteArraySource;
 import com.danikula.videocache.test.BuildConfig;
 
@@ -177,5 +179,19 @@ public class ProxyCacheTest {
         ProxyCache proxyCache = new ProxyCache(new ByteArraySource(generate(20000)), cache);
         proxyCache.read(new byte[5], 19999, 5);
         assertThat(cache.isCompleted()).isTrue();
+    }
+
+    @Test
+    public void testNoTouchSource() throws Exception {
+        int dataSize = 2000;
+        byte[] data = generate(dataSize);
+        File file = newCacheFile();
+        IoUtils.saveToFile(data, file);
+        ProxyCache proxyCache = new ProxyCache(new AngryHttpUrlSource(), new FileCache(file));
+
+        byte[] readData = new byte[dataSize];
+        proxyCache.read(readData, 0, dataSize);
+
+        assertThat(readData).isEqualTo(data);
     }
 }

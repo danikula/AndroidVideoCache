@@ -1,7 +1,7 @@
 package com.danikula.videocache.support;
 
 import com.danikula.android.garden.io.IoUtils;
-import com.danikula.videocache.HttpProxyCache;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.google.common.io.Files;
 
 import org.robolectric.RuntimeEnvironment;
@@ -31,13 +31,13 @@ public class ProxyCacheTestUtils {
         return Files.asByteSource(file).read();
     }
 
-    public static Response readProxyResponse(HttpProxyCache proxy) throws IOException {
-        return readProxyResponse(proxy, -1);
+    public static Response readProxyResponse(HttpProxyCacheServer proxy, String url) throws IOException {
+        return readProxyResponse(proxy, url, -1);
     }
 
-    public static Response readProxyResponse(HttpProxyCache proxy, int offset) throws IOException {
-        URL url = new URL(proxy.getUrl());
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    public static Response readProxyResponse(HttpProxyCacheServer proxy, String url, int offset) throws IOException {
+        URL proxiedUrl = new URL(proxy.getProxyUrl(url));
+        HttpURLConnection connection = (HttpURLConnection) proxiedUrl.openConnection();
         try {
             if (offset >= 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");

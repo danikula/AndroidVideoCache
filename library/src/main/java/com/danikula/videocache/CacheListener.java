@@ -1,10 +1,14 @@
 package com.danikula.videocache;
 
+import java.io.File;
+
 /**
- * @author Egor Makovsky (yahor.makouski@gmail.com).
+ * Listener for cache availability.
+ *
+ * @author Egor Makovsky (yahor.makouski@gmail.com)
+ * @author Alexey Danilov (danikula@gmail.com).
  */
 public interface CacheListener {
-    void onError(ProxyCacheException e);
 
-    void onCacheDataAvailable(int cachePercentage);
+    void onCacheAvailable(File cacheFile, String url, int percentsAvailable);
 }

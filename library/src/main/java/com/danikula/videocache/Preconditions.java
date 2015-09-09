@@ -9,6 +9,14 @@ final class Preconditions {
         return reference;
     }
 
+    static void checkAllNotNull(Object... references) {
+        for (Object reference : references) {
+            if (reference == null) {
+                throw new NullPointerException();
+            }
+        }
+    }
+
     static <T> T checkNotNull(T reference, String errorMessage) {
         if (reference == null) {
             throw new NullPointerException(errorMessage);

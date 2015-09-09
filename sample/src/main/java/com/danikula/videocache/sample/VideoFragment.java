@@ -4,16 +4,11 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.VideoView;
 
-import com.danikula.videocache.Cache;
 import com.danikula.videocache.CacheListener;
-import com.danikula.videocache.FileCache;
-import com.danikula.videocache.HttpProxyCache;
-import com.danikula.videocache.HttpUrlSource;
-import com.danikula.videocache.ProxyCacheException;
+import com.danikula.videocache.HttpProxyCacheServer;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
@@ -34,7 +29,6 @@ public class VideoFragment extends Fragment implements CacheListener {
     @ViewById VideoView videoView;
     @ViewById ProgressBar progressBar;
 
-    private HttpProxyCache proxyCache;
     private final VideoProgressUpdater updater = new VideoProgressUpdater();
 
     public static Fragment build(Context context, Video video) {
@@ -54,16 +48,10 @@ public class VideoFragment extends Fragment implements CacheListener {
     }
 
     private void startVideo() {
-        try {
-            Cache cache = new FileCache(new File(cachePath));
-            HttpUrlSource source = new HttpUrlSource(url);
-            proxyCache = new HttpProxyCache(source, cache);
-            proxyCache.setCacheListener(this);
-            videoView.setVideoPath(proxyCache.getUrl());
-            videoView.start();
-        } catch (ProxyCacheException e) {
-            // do nothing. onError() handles all errors
-        }
+        HttpProxyCacheServer proxy = App.getProxy(getActivity());
+        proxy.registerCacheListener(this, url);
+        videoView.setVideoPath(proxy.getProxyUrl(url));
+        videoView.start();
     }
 
     @Override
@@ -82,19 +70,12 @@ public class VideoFragment extends Fragment implements CacheListener {
     public void onDestroy() {
         super.onDestroy();
 
-        if (proxyCache != null) {
-            proxyCache.shutdown();
-        }
+        App.getProxy(getActivity()).unregisterCacheListener(this);
     }
 
     @Override
-    public void onError(ProxyCacheException e) {
-        Log.e(LOG_TAG, "Error playing video", e);
-    }
-
-    @Override
-    public void onCacheDataAvailable(int cachePercentage) {
-        progressBar.setSecondaryProgress(cachePercentage);
+    public void onCacheAvailable(File file, String url, int percentsAvailable) {
+        progressBar.setSecondaryProgress(percentsAvailable);
     }
 
     private void updateVideoProgress() {
@@ -121,7 +102,7 @@ public class VideoFragment extends Fragment implements CacheListener {
         @Override
         public void handleMessage(Message msg) {
             updateVideoProgress();
-            sendEmptyMessageDelayed(0, 200);
+            sendEmptyMessageDelayed(0, 500);
         }
     }
 }
