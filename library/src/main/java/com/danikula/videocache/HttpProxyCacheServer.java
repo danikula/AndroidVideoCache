@@ -150,6 +150,7 @@ public class HttpProxyCacheServer {
             onError(new ProxyCacheException("Error processing request", e));
         } finally {
             releaseSocket(socket);
+            Log.d(LOG_TAG, "Opened connections: " + getClientsCount());
         }
     }
 
@@ -161,6 +162,16 @@ public class HttpProxyCacheServer {
                 clientsMap.put(url, clients);
             }
             return clients;
+        }
+    }
+
+    private int getClientsCount() {
+        synchronized (clientsLock) {
+            int count = 0;
+            for (HttpProxyCacheServerClients clients : clientsMap.values()) {
+                count += clients.getClientsCount();
+            }
+            return count;
         }
     }
 

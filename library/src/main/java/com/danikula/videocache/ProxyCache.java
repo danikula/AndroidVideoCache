@@ -40,17 +40,9 @@ class ProxyCache {
         while (!cache.isCompleted() && cache.available() < (offset + length) && !stopped) {
             readSourceAsync();
             waitForSourceData();
-            checkIsCacheValid();
             checkReadSourceErrorsCount();
         }
         return cache.read(buffer, offset, length);
-    }
-
-    private void checkIsCacheValid() throws ProxyCacheException {
-        int sourceAvailable = source.available();
-        if (sourceAvailable > 0 && cache.available() > sourceAvailable) {
-            throw new ProxyCacheException("Unexpected cache: cache [" + cache.available() + " bytes] > source[" + sourceAvailable + " bytes]");
-        }
     }
 
     private void checkReadSourceErrorsCount() throws ProxyCacheException {
@@ -76,10 +68,10 @@ class ProxyCache {
         }
     }
 
-    private void readSourceAsync() throws ProxyCacheException {
+    private synchronized void readSourceAsync() throws ProxyCacheException {
         boolean readingInProgress = sourceReaderThread != null && sourceReaderThread.getState() != Thread.State.TERMINATED;
         if (!stopped && !cache.isCompleted() && !readingInProgress) {
-            sourceReaderThread = new Thread(new SourceReaderRunnable(), "Source reader for ProxyCache");
+            sourceReaderThread = new Thread(new SourceReaderRunnable(), "Source reader for " + source);
             sourceReaderThread.start();
         }
     }
@@ -102,7 +94,7 @@ class ProxyCache {
         }
     }
 
-    protected void onCacheAvailable(int percents){
+    protected void onCacheAvailable(int percents) {
     }
 
     private void readSource() {

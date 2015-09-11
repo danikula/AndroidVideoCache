@@ -5,7 +5,6 @@ import com.danikula.videocache.support.AngryHttpUrlSource;
 import com.danikula.videocache.support.PhlegmaticByteArraySource;
 import com.danikula.videocache.test.BuildConfig;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -89,17 +88,6 @@ public class ProxyCacheTest {
         Arrays.fill(fetchedData, (byte) 0);
         proxyCache.read(fetchedData, 0, size);
         assertThat(fetchedData).isEqualTo(sourceCopy);
-    }
-
-    @Test(expected = ProxyCacheException.class)
-    public void testNoMoreSource() throws Exception {
-        int sourceSize = 942;
-        int cacheSize = 6157;
-        ByteArraySource source = new ByteArraySource(generate(sourceSize));
-        ByteArrayCache cache = new ByteArrayCache(generate(cacheSize));
-        ProxyCache proxyCache = new ProxyCache(source, cache);
-        proxyCache.read(new byte[sourceSize + cacheSize], sourceSize + cacheSize + 1, 10);
-        Assert.fail();
     }
 
     @Test

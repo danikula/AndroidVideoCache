@@ -34,16 +34,23 @@ final class HttpProxyCacheServerClients {
     }
 
     public void processRequest(GetRequest request, Socket socket) throws ProxyCacheException, IOException {
-        proxyCache = proxyCache == null ? newHttpProxyCache() : proxyCache;
+        startProcessRequest();
         try {
             clientsCount.incrementAndGet();
             proxyCache.processRequest(request, socket);
         } finally {
-            int count = clientsCount.decrementAndGet();
-            if (count <= 0) {
-                proxyCache.shutdown();
-                proxyCache = null;
-            }
+            finishProcessRequest();
+        }
+    }
+
+    private synchronized void startProcessRequest() throws ProxyCacheException {
+        proxyCache = proxyCache == null ? newHttpProxyCache() : proxyCache;
+    }
+
+    private synchronized void finishProcessRequest() {
+        if (clientsCount.decrementAndGet() <= 0) {
+            proxyCache.shutdown();
+            proxyCache = null;
         }
     }
 
@@ -63,6 +70,10 @@ final class HttpProxyCacheServerClients {
             proxyCache = null;
         }
         clientsCount.set(0);
+    }
+
+    public int getClientsCount() {
+        return clientsCount.get();
     }
 
     private HttpProxyCache newHttpProxyCache() throws ProxyCacheException {

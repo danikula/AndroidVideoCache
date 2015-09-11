@@ -70,6 +70,7 @@ public class VideoFragment extends Fragment implements CacheListener {
     public void onDestroy() {
         super.onDestroy();
 
+        videoView.stopPlayback();
         App.getProxy(getActivity()).unregisterCacheListener(this);
     }
 

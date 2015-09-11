@@ -3,12 +3,14 @@ package com.danikula.videocache;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
 import static com.danikula.videocache.ProxyCacheUtils.LOG_TAG;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_PARTIAL;
@@ -36,7 +38,7 @@ public class HttpUrlSource implements Source {
     }
 
     @Override
-    public int available() throws ProxyCacheException {
+    public synchronized int available() throws ProxyCacheException {
         if (available == Integer.MIN_VALUE) {
             fetchContentInfo();
         }
@@ -52,7 +54,7 @@ public class HttpUrlSource implements Source {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");
             }
             mime = connection.getContentType();
-            inputStream = connection.getInputStream();
+            inputStream = new BufferedInputStream(connection.getInputStream(), DEFAULT_BUFFER_SIZE);
             available = readSourceAvailableBytes(connection, offset);
         } catch (IOException e) {
             throw new ProxyCacheException("Error opening connection for " + url + " with offset " + offset, e);
@@ -91,22 +93,27 @@ public class HttpUrlSource implements Source {
     private void fetchContentInfo() throws ProxyCacheException {
         Log.d(LOG_TAG, "Read content info from " + url);
         HttpURLConnection urlConnection = null;
+        InputStream inputStream = null;
         try {
             urlConnection = (HttpURLConnection) new URL(url).openConnection();
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setReadTimeout(10000);
             urlConnection.setRequestMethod("HEAD");
             available = urlConnection.getContentLength();
             mime = urlConnection.getContentType();
-            Log.i(LOG_TAG, "Info read: " + this);
+            inputStream = urlConnection.getInputStream();
+            Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + available);
         } catch (IOException e) {
             throw new ProxyCacheException("Error fetching Content-Length from " + url);
         } finally {
+            ProxyCacheUtils.close(inputStream);
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
         }
     }
 
-    public String getMime() throws ProxyCacheException {
+    public synchronized String getMime() throws ProxyCacheException {
         if (TextUtils.isEmpty(mime)) {
             fetchContentInfo();
         }
@@ -115,10 +122,6 @@ public class HttpUrlSource implements Source {
 
     @Override
     public String toString() {
-        return "HttpUrlSource{" +
-                "url='" + url + '\'' +
-                ", available=" + available +
-                ", mime='" + mime + '\'' +
-                '}';
+        return "HttpUrlSource{url='" + url + "}";
     }
 }

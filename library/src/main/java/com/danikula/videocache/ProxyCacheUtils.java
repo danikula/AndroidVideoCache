@@ -1,8 +1,10 @@
 package com.danikula.videocache;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -72,6 +74,16 @@ class ProxyCacheUtils {
             return URLDecoder.decode(url, "utf-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("Error decoding url", e);
+        }
+    }
+
+    static void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error closing resource", e);
+            }
         }
     }
 }
