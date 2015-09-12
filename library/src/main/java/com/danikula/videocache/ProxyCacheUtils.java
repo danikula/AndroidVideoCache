@@ -25,6 +25,7 @@ class ProxyCacheUtils {
     static final String LOG_TAG = "ProxyCache";
     static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     static final int MAX_ARRAY_PREVIEW = 16;
+    static final int MAX_REDIRECTS = 5;
 
     static String getSupposablyMime(String url) {
         MimeTypeMap mimes = MimeTypeMap.getSingleton();

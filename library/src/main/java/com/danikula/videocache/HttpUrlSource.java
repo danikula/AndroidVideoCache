@@ -2,7 +2,6 @@ package com.danikula.videocache;
 
 import android.text.TextUtils;
 import android.util.Log;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +21,7 @@ import static java.net.HttpURLConnection.HTTP_PARTIAL;
  */
 public class HttpUrlSource implements Source {
 
-    public final String url;
+    public String url;
     private HttpURLConnection connection;
     private InputStream inputStream;
     private volatile int available = Integer.MIN_VALUE;
@@ -48,25 +47,42 @@ public class HttpUrlSource implements Source {
     @Override
     public void open(int offset) throws ProxyCacheException {
         try {
-            Log.d(LOG_TAG, "Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
-            connection = (HttpURLConnection) new URL(url).openConnection();
-            if (offset > 0) {
-                connection.setRequestProperty("Range", "bytes=" + offset + "-");
-            }
+            boolean isRedirected;
+            int redirectCount = 0;
+            int responseCode;
+            do {
+                Log.d(ProxyCacheUtils.LOG_TAG, "Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
+                connection = (HttpURLConnection) new URL(url).openConnection();
+                if (offset > 0) {
+                    connection.setRequestProperty("Range", "bytes=" + offset + "-");
+                }
+                responseCode = connection.getResponseCode();
+                if ((responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                        || responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                        || responseCode == HttpURLConnection.HTTP_SEE_OTHER)) {
+                    url = connection.getHeaderField("Location");
+                    isRedirected = true;
+                    redirectCount++;
+                } else {
+                    isRedirected = false;
+                }
+                if (redirectCount > ProxyCacheUtils.MAX_REDIRECTS) {
+                    throw new ProxyCacheException("Too many redirects");
+                }
+            } while (isRedirected);
+
             mime = connection.getContentType();
             inputStream = new BufferedInputStream(connection.getInputStream(), DEFAULT_BUFFER_SIZE);
-            available = readSourceAvailableBytes(connection, offset);
+            available = readSourceAvailableBytes(connection, offset, responseCode);
         } catch (IOException e) {
             throw new ProxyCacheException("Error opening connection for " + url + " with offset " + offset, e);
         }
     }
 
-    private int readSourceAvailableBytes(HttpURLConnection connection, int offset) throws IOException {
+    private int readSourceAvailableBytes(HttpURLConnection connection, int offset, int responseCode) throws IOException {
         int contentLength = connection.getContentLength();
-        int responseCode = connection.getResponseCode();
-        return responseCode == HTTP_OK ? contentLength :
-                responseCode == HTTP_PARTIAL ? contentLength + offset :
-                        available;
+        return responseCode == HTTP_OK ? contentLength
+                : responseCode == HTTP_PARTIAL ? contentLength + offset : available;
     }
 
     @Override
@@ -95,10 +111,28 @@ public class HttpUrlSource implements Source {
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
-            urlConnection = (HttpURLConnection) new URL(url).openConnection();
-            urlConnection.setConnectTimeout(10000);
-            urlConnection.setReadTimeout(10000);
-            urlConnection.setRequestMethod("HEAD");
+            boolean isRedirected;
+            int redirectCount = 0;
+            do {
+                urlConnection = (HttpURLConnection) new URL(url).openConnection();
+                urlConnection.setConnectTimeout(10000);
+                urlConnection.setReadTimeout(10000);
+                urlConnection.setRequestMethod("HEAD");
+                int responseCode = urlConnection.getResponseCode();
+                if ((responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                        || responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                        || responseCode == HttpURLConnection.HTTP_SEE_OTHER)) {
+                    url = urlConnection.getHeaderField("Location");
+                    isRedirected = true;
+                    redirectCount++;
+                } else {
+                    isRedirected = false;
+                }
+                if (redirectCount > ProxyCacheUtils.MAX_REDIRECTS) {
+                    throw new ProxyCacheException("Too many redirects");
+                }
+            } while (isRedirected);
+
             available = urlConnection.getContentLength();
             mime = urlConnection.getContentType();
             inputStream = urlConnection.getInputStream();
