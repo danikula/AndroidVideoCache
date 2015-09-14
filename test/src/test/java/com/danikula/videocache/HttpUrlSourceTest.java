@@ -1,15 +1,13 @@
 package com.danikula.videocache;
 
 import com.danikula.videocache.test.BuildConfig;
-
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
-
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_BIG_NAME;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_NAME;
@@ -66,5 +64,10 @@ public class HttpUrlSourceTest {
     public void testMimeByUrl() throws Exception {
         assertThat(new HttpUrlSource("http://mysite.by/video.mp4").getMime()).isEqualTo("video/mp4");
         assertThat(new HttpUrlSource(HTTP_DATA_URL).getMime()).isEqualTo("image/jpeg");
+    }
+
+    @Test
+    public void testHttpUrlSourceRedirect() throws Exception {
+        assertThat(new HttpUrlSource("http://goo.gl/K0gWQW").getMime()).isEqualTo("video/mp4");
     }
 }
