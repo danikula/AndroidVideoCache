@@ -62,6 +62,7 @@ See `sample` app for details.
 ### 2.1
 - fix for too long cache file name
 - url redirects support (thanks [ongakuer](https://github.com/ongakuer) for [PR](https://github.com/danikula/AndroidVideoCache/pull/12))
+
 ### 2.0
 - simpler api
 - single cache for multiple clients
