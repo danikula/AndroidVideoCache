@@ -21,7 +21,11 @@ import java.util.UUID;
 public class ProxyCacheTestUtils {
 
     public static final String HTTP_DATA_URL = "https://dl.dropboxusercontent.com/u/15506779/persistent/proxycache/android.jpg";
+    public static final String HTTP_DATA_URL_ONE_REDIRECT = "http://bit.ly/1V5PeY5";
+    public static final String HTTP_DATA_URL_3_REDIRECTS = "http://bit.ly/1KvVmgZ";
+    public static final String HTTP_DATA_URL_6_REDIRECTS = "http://ow.ly/SugRH";
     public static final String HTTP_DATA_BIG_URL = "https://dl.dropboxusercontent.com/u/15506779/persistent/proxycache/phones.jpg";
+    public static final String HTTP_DATA_BIG_URL_ONE_REDIRECT = "http://bit.ly/1iJ69yA";
     public static final String ASSETS_DATA_NAME = "android.jpg";
     public static final String ASSETS_DATA_BIG_NAME = "phones.jpg";
     public static final int HTTP_DATA_SIZE = 4768;

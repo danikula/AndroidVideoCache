@@ -21,6 +21,7 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_BI
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_NAME;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_SIZE;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_URL;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_URL_ONE_REDIRECT;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getFileContent;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
@@ -82,9 +83,41 @@ public class HttpProxyCacheServerTest {
     }
 
     @Test
+    public void testProxyFullResponseWithRedirect() throws Exception {
+        Pair<File, Response> response = readProxyData(HTTP_DATA_BIG_URL_ONE_REDIRECT);
+
+        assertThat(response.second.code).isEqualTo(200);
+        assertThat(response.second.contentLength).isEqualTo(HTTP_DATA_BIG_SIZE);
+        assertThat(response.second.contentType).isEqualTo("image/jpeg");
+        assertThat(response.second.headers.containsKey("Accept-Ranges")).isTrue();
+        assertThat(response.second.headers.get("Accept-Ranges").get(0)).isEqualTo("bytes");
+        assertThat(response.second.headers.containsKey("Content-Range")).isFalse();
+        assertThat(response.second.data).isEqualTo(getFileContent(response.first));
+        assertThat(response.second.data).isEqualTo(loadAssetFile(ASSETS_DATA_BIG_NAME));
+    }
+
+    @Test
     public void testProxyPartialResponse() throws Exception {
         int offset = 42000;
         Pair<File, Response> response = readProxyData(HTTP_DATA_BIG_URL, offset);
+
+        assertThat(response.second.code).isEqualTo(206);
+        assertThat(response.second.contentLength).isEqualTo(HTTP_DATA_BIG_SIZE - offset);
+        assertThat(response.second.contentType).isEqualTo("image/jpeg");
+        assertThat(response.second.headers.containsKey("Accept-Ranges")).isTrue();
+        assertThat(response.second.headers.get("Accept-Ranges").get(0)).isEqualTo("bytes");
+        assertThat(response.second.headers.containsKey("Content-Range")).isTrue();
+        String rangeHeader = String.format("bytes %d-%d/%d", offset, HTTP_DATA_BIG_SIZE, HTTP_DATA_BIG_SIZE);
+        assertThat(response.second.headers.get("Content-Range").get(0)).isEqualTo(rangeHeader);
+        byte[] expectedData = Arrays.copyOfRange(loadAssetFile(ASSETS_DATA_BIG_NAME), offset, HTTP_DATA_BIG_SIZE);
+        assertThat(response.second.data).isEqualTo(expectedData);
+        assertThat(getFileContent(response.first)).isEqualTo(loadAssetFile(ASSETS_DATA_BIG_NAME));
+    }
+
+    @Test
+    public void testProxyPartialResponseWithRedirect() throws Exception {
+        int offset = 42000;
+        Pair<File, Response> response = readProxyData(HTTP_DATA_BIG_URL_ONE_REDIRECT, offset);
 
         assertThat(response.second.code).isEqualTo(206);
         assertThat(response.second.contentLength).isEqualTo(HTTP_DATA_BIG_SIZE - offset);

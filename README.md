@@ -12,7 +12,7 @@ repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 dependencies {
-    compile 'com.danikula:videocache:2.0.9'
+    compile 'com.danikula:videocache:2.1.0'
 }
 ```
 
