@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import static com.danikula.videocache.Preconditions.checkArgument;
@@ -86,4 +88,23 @@ class ProxyCacheUtils {
             }
         }
     }
+
+    static String computeMD5(String string) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            byte[] digestBytes = messageDigest.digest(string.getBytes());
+            return bytesToHexString(digestBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    static String bytesToHexString(byte[] bytes) {
+        StringBuffer sb = new StringBuffer();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
 }
