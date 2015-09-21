@@ -12,7 +12,7 @@ repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 dependencies {
-    compile 'com.danikula:videocache:2.1.0'
+    compile 'com.danikula:videocache:2.1.1'
 }
 ```
 
@@ -58,7 +58,11 @@ More preferable way is use some dependency injector like [Dagger](http://square.
 
 See `sample` app for details.
 
-## Whats new in 2.0?
+## Whats new
+### 2.1
+- fix for too long cache file name
+- url redirects support (thanks [ongakuer](https://github.com/ongakuer) for [PR](https://github.com/danikula/AndroidVideoCache/pull/12))
+### 2.0
 - simpler api
 - single cache for multiple clients
 - cache file name policy
