@@ -61,6 +61,7 @@ See `sample` app for details.
 ## Whats new
 ### 2.1.2
 - fix offline work
+
 ### 2.1.1
 - fix for too long cache file name
 - url redirects support (thanks [ongakuer](https://github.com/ongakuer) for [PR](https://github.com/danikula/AndroidVideoCache/pull/12))
