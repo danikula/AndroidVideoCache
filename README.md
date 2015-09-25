@@ -12,7 +12,7 @@ repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 dependencies {
-    compile 'com.danikula:videocache:2.1.2'
+    compile 'com.danikula:videocache:2.1.3'
 }
 ```
 
@@ -59,6 +59,9 @@ More preferable way is use some dependency injector like [Dagger](http://square.
 See `sample` app for details.
 
 ## Whats new
+### 2.1.3
+- ping proxy after starting to make sure it works fine
+
 ### 2.1.2
 - fix offline work
 
