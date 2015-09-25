@@ -99,7 +99,7 @@ public class HttpUrlSource implements Source {
             inputStream = urlConnection.getInputStream();
             Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + available);
         } catch (IOException e) {
-            throw new ProxyCacheException("Error fetching Content-Length from " + url);
+            Log.e(LOG_TAG, "Error fetching info from " + url, e);
         } finally {
             ProxyCacheUtils.close(inputStream);
             if (urlConnection != null) {
