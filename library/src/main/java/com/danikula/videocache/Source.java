@@ -7,11 +7,34 @@ package com.danikula.videocache;
  */
 public interface Source {
 
-    int available() throws ProxyCacheException;
-
+    /**
+     * Opens source. Source should be open before using {@link #read(byte[])}
+     *
+     * @param offset offset in bytes for source.
+     * @throws ProxyCacheException if error occur while opening source.
+     */
     void open(int offset) throws ProxyCacheException;
 
-    void close() throws ProxyCacheException;
+    /**
+     * Returns available bytes or <b>negative value</b> if available bytes count is unknown.
+     *
+     * @return bytes available
+     * @throws ProxyCacheException if error occur while fetching source data.
+     */
+    int available() throws ProxyCacheException;
 
+    /**
+     * Read data to byte buffer from source with current offset.
+     *
+     * @param buffer a buffer to be used for reading data.
+     * @throws ProxyCacheException if error occur while reading source.
+     */
     int read(byte[] buffer) throws ProxyCacheException;
+
+    /**
+     * Closes source and release resources. Every opened source should be closed.
+     *
+     * @throws ProxyCacheException if error occur while closing source.
+     */
+    void close() throws ProxyCacheException;
 }

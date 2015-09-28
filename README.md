@@ -12,7 +12,7 @@ repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 dependencies {
-    compile 'com.danikula:videocache:2.1.3'
+    compile 'com.danikula:videocache:2.1.4'
 }
 ```
 
@@ -59,14 +59,17 @@ More preferable way is use some dependency injector like [Dagger](http://square.
 See `sample` app for details.
 
 ## Whats new
+### 2.1.4
+- [fix](https://github.com/danikula/AndroidVideoCache/issues/18) available cache percents callback 
+
 ### 2.1.3
 - ping proxy after starting to make sure it works fine
 
 ### 2.1.2
-- fix offline work
+- [fix](https://github.com/danikula/AndroidVideoCache/issues/13) offline work
 
 ### 2.1.1
-- fix for too long cache file name
+- [fix](https://github.com/danikula/AndroidVideoCache/issues/14) for too long cache file name
 - url redirects support (thanks [ongakuer](https://github.com/ongakuer) for [PR](https://github.com/danikula/AndroidVideoCache/pull/12))
 
 ### 2.0

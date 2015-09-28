@@ -43,9 +43,6 @@ class HttpProxyCache extends ProxyCache {
             }
             out.write(buffer, 0, readBytes);
             offset += readBytes;
-            if (cache.isCompleted()) {
-                onCacheAvailable(100);
-            }
         }
         out.flush();
     }
@@ -68,7 +65,7 @@ class HttpProxyCache extends ProxyCache {
     }
 
     @Override
-    protected void onCacheAvailable(int percents) {
+    protected void onCachePercentsAvailableChanged(int percents) {
         if (listener != null) {
             listener.onCacheAvailable(cache.file, source.url, percents);
         }

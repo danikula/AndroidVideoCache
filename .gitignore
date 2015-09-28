@@ -1,6 +1,7 @@
 *.iml
 .DS_Store
 .gradle
+.publish.sh
 
 /.idea
 /build

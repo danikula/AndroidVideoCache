@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.VideoView;
 
@@ -77,6 +78,7 @@ public class VideoFragment extends Fragment implements CacheListener {
     @Override
     public void onCacheAvailable(File file, String url, int percentsAvailable) {
         progressBar.setSecondaryProgress(percentsAvailable);
+        Log.d(LOG_TAG, String.format("onCacheAvailable. percents: %d, file: %s, url: %s", percentsAvailable, file, url));
     }
 
     private void updateVideoProgress() {

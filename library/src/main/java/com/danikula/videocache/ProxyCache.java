@@ -24,9 +24,10 @@ class ProxyCache {
     private final Cache cache;
     private final Object wc = new Object();
     private final Object stopLock = new Object();
+    private final AtomicInteger readSourceErrorsCount;
     private volatile Thread sourceReaderThread;
     private volatile boolean stopped;
-    private final AtomicInteger readSourceErrorsCount;
+    private volatile int percentsAvailable = -1;
 
     public ProxyCache(Source source, Cache cache) {
         this.source = checkNotNull(source);
@@ -42,7 +43,12 @@ class ProxyCache {
             waitForSourceData();
             checkReadSourceErrorsCount();
         }
-        return cache.read(buffer, offset, length);
+        int read = cache.read(buffer, offset, length);
+        if (cache.isCompleted() && percentsAvailable != 100) {
+            percentsAvailable = 100;
+            onCachePercentsAvailableChanged(100);
+        }
+        return read;
     }
 
     private void checkReadSourceErrorsCount() throws ProxyCacheException {
@@ -86,22 +92,34 @@ class ProxyCache {
         }
     }
 
-    private void notifyNewCacheDataAvailable(int cachePercentage) {
-        onCacheAvailable(cachePercentage);
+    private void notifyNewCacheDataAvailable(long cacheAvailable, long sourceAvailable) {
+        onCacheAvailable(cacheAvailable, sourceAvailable);
 
         synchronized (wc) {
             wc.notifyAll();
         }
     }
 
-    protected void onCacheAvailable(int percents) {
+    protected void onCacheAvailable(long cacheAvailable, long sourceAvailable) {
+        int percents = (int) (cacheAvailable * 100 / sourceAvailable);
+        boolean percentsChanged = percents != percentsAvailable;
+        boolean sourceLengthKnown = sourceAvailable >= 0;
+        if (sourceLengthKnown && percentsChanged) {
+            onCachePercentsAvailableChanged(percents);
+        }
+        percentsAvailable = percents;
+    }
+
+    protected void onCachePercentsAvailableChanged(int percentsAvailable) {
     }
 
     private void readSource() {
-        int cachePercentage = 0;
+        int sourceAvailable = -1;
+        int offset = 0;
         try {
-            int offset = cache.available();
+            offset = cache.available();
             source.open(offset);
+            sourceAvailable = source.available();
             byte[] buffer = new byte[ProxyCacheUtils.DEFAULT_BUFFER_SIZE];
             int readBytes;
             while ((readBytes = source.read(buffer)) != -1) {
@@ -112,9 +130,7 @@ class ProxyCache {
                     cache.append(buffer, readBytes);
                 }
                 offset += readBytes;
-                cachePercentage = offset * 100 / source.available();
-
-                notifyNewCacheDataAvailable(cachePercentage);
+                notifyNewCacheDataAvailable(offset, sourceAvailable);
             }
             tryComplete();
         } catch (Throwable e) {
@@ -122,7 +138,7 @@ class ProxyCache {
             onError(e);
         } finally {
             closeSource();
-            notifyNewCacheDataAvailable(cachePercentage);
+            notifyNewCacheDataAvailable(offset, sourceAvailable);
         }
     }
 
