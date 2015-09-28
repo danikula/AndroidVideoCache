@@ -1,10 +1,10 @@
 *.iml
 .DS_Store
 .gradle
-.publish.sh
 
 /.idea
 /build
+/publish.sh
 /local.properties
 /gradle.properties
 /library/build
