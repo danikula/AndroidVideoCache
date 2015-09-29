@@ -80,6 +80,17 @@ See `sample` app for details.
 - more samples
 - less log flood
 
+
+## Code contributions
+
+If it's a feature that you think would need to be discussed please open an issue first, otherwise, you can follow this process:
+
+1. [Fork the project](http://help.github.com/fork-a-repo/)
+2. Create a feature branch (git checkout -b my_branch)
+3. Push your changes to your new branch (git push origin my_branch)
+4. Initiate a [pull request](http://help.github.com/send-pull-requests/) on github
+5. Your pull request will be reviewed and hopefully merged :)
+
 ## Where published?
 [Here](https://bintray.com/alexeydanilov/maven/videocache/view)
 
