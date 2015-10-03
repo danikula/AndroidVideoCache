@@ -59,33 +59,9 @@ More preferable way is use some dependency injector like [Dagger](http://square.
 See `sample` app for details.
 
 ## Whats new
-### 2.2.0
-- allow to [seek video](https://github.com/danikula/AndroidVideoCache/issues/21) in any position and [fix](https://github.com/danikula/AndroidVideoCache/issues/17) streaming while caching  
-
-### 2.1.4
-- [fix](https://github.com/danikula/AndroidVideoCache/issues/18) available cache percents callback 
-
-### 2.1.3
-- ping proxy after starting to make sure it works fine
-
-### 2.1.2
-- [fix](https://github.com/danikula/AndroidVideoCache/issues/13) offline work
-
-### 2.1.1
-- [fix](https://github.com/danikula/AndroidVideoCache/issues/14) for too long cache file name
-- url redirects support (thanks [ongakuer](https://github.com/ongakuer) for [PR](https://github.com/danikula/AndroidVideoCache/pull/12))
-
-### 2.0
-- simpler api
-- single cache for multiple clients
-- cache file name policy
-- more powerful listener
-- more samples
-- less log flood
-
+See Release Notes [here](https://github.com/danikula/AndroidVideoCache/releases)
 
 ## Code contributions
-
 If it's a feature that you think would need to be discussed please open an issue first, otherwise, you can follow this process:
 
 1. [Fork the project](http://help.github.com/fork-a-repo/)
