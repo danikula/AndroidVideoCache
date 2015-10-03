@@ -11,7 +11,7 @@ import com.danikula.videocache.Source;
 public class AngryHttpUrlSource implements Source {
 
     @Override
-    public int available() throws ProxyCacheException {
+    public int length() throws ProxyCacheException {
         throw new IllegalStateException();
     }
 

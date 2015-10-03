@@ -29,7 +29,7 @@ public class HttpUrlSource implements Source {
     public final String url;
     private HttpURLConnection connection;
     private InputStream inputStream;
-    private volatile int available = Integer.MIN_VALUE;
+    private volatile int length = Integer.MIN_VALUE;
     private volatile String mime;
 
     public HttpUrlSource(String url) {
@@ -41,12 +41,18 @@ public class HttpUrlSource implements Source {
         this.mime = mime;
     }
 
+    public HttpUrlSource(HttpUrlSource source) {
+        this.url = source.url;
+        this.mime = source.mime;
+        this.length = source.length;
+    }
+
     @Override
-    public synchronized int available() throws ProxyCacheException {
-        if (available == Integer.MIN_VALUE) {
+    public synchronized int length() throws ProxyCacheException {
+        if (length == Integer.MIN_VALUE) {
             fetchContentInfo();
         }
-        return available;
+        return length;
     }
 
     @Override
@@ -55,7 +61,7 @@ public class HttpUrlSource implements Source {
             connection = openConnection(offset, "GET", -1);
             mime = connection.getContentType();
             inputStream = new BufferedInputStream(connection.getInputStream(), DEFAULT_BUFFER_SIZE);
-            available = readSourceAvailableBytes(connection, offset, connection.getResponseCode());
+            length = readSourceAvailableBytes(connection, offset, connection.getResponseCode());
         } catch (IOException e) {
             throw new ProxyCacheException("Error opening connection for " + url + " with offset " + offset, e);
         }
@@ -64,7 +70,7 @@ public class HttpUrlSource implements Source {
     private int readSourceAvailableBytes(HttpURLConnection connection, int offset, int responseCode) throws IOException {
         int contentLength = connection.getContentLength();
         return responseCode == HTTP_OK ? contentLength
-                : responseCode == HTTP_PARTIAL ? contentLength + offset : available;
+                : responseCode == HTTP_PARTIAL ? contentLength + offset : length;
     }
 
     @Override
@@ -94,10 +100,10 @@ public class HttpUrlSource implements Source {
         InputStream inputStream = null;
         try {
             urlConnection = openConnection(0, "HEAD", 10000);
-            available = urlConnection.getContentLength();
+            length = urlConnection.getContentLength();
             mime = urlConnection.getContentType();
             inputStream = urlConnection.getInputStream();
-            Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + available);
+            Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + length);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error fetching info from " + url, e);
         } finally {

@@ -98,7 +98,7 @@ public class HttpProxyCacheServerTest {
 
     @Test
     public void testProxyPartialResponse() throws Exception {
-        int offset = 42000;
+        int offset = 18000;
         Pair<File, Response> response = readProxyData(HTTP_DATA_BIG_URL, offset);
 
         assertThat(response.second.code).isEqualTo(206);
@@ -116,7 +116,7 @@ public class HttpProxyCacheServerTest {
 
     @Test
     public void testProxyPartialResponseWithRedirect() throws Exception {
-        int offset = 42000;
+        int offset = 18000;
         Pair<File, Response> response = readProxyData(HTTP_DATA_BIG_URL_ONE_REDIRECT, offset);
 
         assertThat(response.second.code).isEqualTo(206);

@@ -22,7 +22,7 @@ public class ByteArraySource implements Source {
     }
 
     @Override
-    public int available() throws ProxyCacheException {
+    public int length() throws ProxyCacheException {
         return data.length;
     }
 

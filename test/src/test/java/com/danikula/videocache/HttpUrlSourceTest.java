@@ -63,14 +63,14 @@ public class HttpUrlSourceTest {
     @Test
     public void testFetchContentLength() throws Exception {
         Source source = new HttpUrlSource(HTTP_DATA_URL);
-        assertThat(source.available()).isEqualTo(loadAssetFile(ASSETS_DATA_NAME).length);
+        assertThat(source.length()).isEqualTo(loadAssetFile(ASSETS_DATA_NAME).length);
     }
 
     @Test
     public void testFetchInfoWithRedirect() throws Exception {
         HttpUrlSource source = new HttpUrlSource(HTTP_DATA_URL_ONE_REDIRECT);
         source.open(0);
-        int available = source.available();
+        int available = source.length();
         String mime = source.getMime();
         source.close();
 
