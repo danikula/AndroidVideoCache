@@ -79,7 +79,7 @@ public class HttpProxyCacheServer {
 
     private void makeSureServerWorks() {
         int maxPingAttempts = 3;
-        int delay = 100;
+        int delay = 200;
         int pingAttempts = 0;
         while (pingAttempts < maxPingAttempts) {
             try {
@@ -92,13 +92,13 @@ public class HttpProxyCacheServer {
                 SystemClock.sleep(delay);
                 delay *= 2;
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                Log.e(LOG_TAG, "Error pinging server. Shutdown it... If you see this message, please, email me danikula@gmail.com", e);
+                Log.e(LOG_TAG, "Error pinging server [attempt: " + pingAttempts + ", timeout: " + delay + "]. ", e);
             }
         }
 
-        if (!pinged) {
-            shutdown();
-        }
+        Log.e(LOG_TAG, "Shutdown server… Error pinging server [attempt: " + pingAttempts + ", timeout: " + delay + "]. " +
+                "If you see this message, please, email me danikula@gmail.com");
+        shutdown();
     }
 
     private boolean pingServer() throws ProxyCacheException {
@@ -212,7 +212,7 @@ public class HttpProxyCacheServer {
         } catch (SocketException e) {
             // There is no way to determine that client closed connection http://stackoverflow.com/a/10241044/999458
             // So just to prevent log flooding don't log stacktrace
-            Log.d(LOG_TAG, "Client communication problem. It seems client closed connection");
+            Log.d(LOG_TAG, "Closing socket… Socket is closed by client.");
         } catch (ProxyCacheException | IOException e) {
             onError(new ProxyCacheException("Error processing request", e));
         } finally {
@@ -262,7 +262,7 @@ public class HttpProxyCacheServer {
         } catch (SocketException e) {
             // There is no way to determine that client closed connection http://stackoverflow.com/a/10241044/999458
             // So just to prevent log flooding don't log stacktrace
-            Log.d(LOG_TAG, "Error closing client's input stream: it seems client closed connection");
+            Log.d(LOG_TAG, "Releasing input stream… Socket is closed by client.");
         } catch (IOException e) {
             onError(new ProxyCacheException("Error closing socket input stream", e));
         }

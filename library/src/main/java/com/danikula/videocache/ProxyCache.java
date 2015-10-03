@@ -119,7 +119,7 @@ class ProxyCache {
         try {
             offset = cache.available();
             source.open(offset);
-            sourceAvailable = source.available();
+            sourceAvailable = source.length();
             byte[] buffer = new byte[ProxyCacheUtils.DEFAULT_BUFFER_SIZE];
             int readBytes;
             while ((readBytes = source.read(buffer)) != -1) {
@@ -144,7 +144,7 @@ class ProxyCache {
 
     private void tryComplete() throws ProxyCacheException {
         synchronized (stopLock) {
-            if (!isStopped() && cache.available() == source.available()) {
+            if (!isStopped() && cache.available() == source.length()) {
                 cache.complete();
             }
         }

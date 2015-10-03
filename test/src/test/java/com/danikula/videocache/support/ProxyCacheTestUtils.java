@@ -52,6 +52,10 @@ public class ProxyCacheTestUtils {
         }
     }
 
+    public static byte[] loadTestData() throws IOException {
+        return loadAssetFile(ASSETS_DATA_NAME);
+    }
+
     public static byte[] loadAssetFile(String name) throws IOException {
         InputStream in = RuntimeEnvironment.application.getResources().getAssets().open(name);
         ByteArrayOutputStream out = new ByteArrayOutputStream();

@@ -12,7 +12,7 @@ repositories {
     maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
 }
 dependencies {
-    compile 'com.danikula:videocache:2.1.4'
+    compile 'com.danikula:videocache:2.2.0'
 }
 ```
 
@@ -34,7 +34,7 @@ private HttpProxyCacheServer getProxy() {
 ```
 
 To guarantee normal work you should use **single** instance of `HttpProxyCacheServer` for whole app.
-For example you can store shared proxy on your `Application`:
+For example you can store shared proxy in your `Application`:
 
 ```java
 public class App extends Application {
@@ -59,6 +59,9 @@ More preferable way is use some dependency injector like [Dagger](http://square.
 See `sample` app for details.
 
 ## Whats new
+### 2.2.0
+- allow to [seek video](https://github.com/danikula/AndroidVideoCache/issues/21) in any position and [fix](https://github.com/danikula/AndroidVideoCache/issues/17) streaming while caching  
+
 ### 2.1.4
 - [fix](https://github.com/danikula/AndroidVideoCache/issues/18) available cache percents callback 
 

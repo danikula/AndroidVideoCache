@@ -16,12 +16,12 @@ public interface Source {
     void open(int offset) throws ProxyCacheException;
 
     /**
-     * Returns available bytes or <b>negative value</b> if available bytes count is unknown.
+     * Returns length bytes or <b>negative value</b> if length is unknown.
      *
-     * @return bytes available
+     * @return bytes length
      * @throws ProxyCacheException if error occur while fetching source data.
      */
-    int available() throws ProxyCacheException;
+    int length() throws ProxyCacheException;
 
     /**
      * Read data to byte buffer from source with current offset.

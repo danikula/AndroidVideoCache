@@ -7,12 +7,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
+
 /**
  * {@link ProxyCache} that read http url and writes data to {@link Socket}
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
 class HttpProxyCache extends ProxyCache {
+
+    private static final float NO_CACHE_BARRIER = .2f;
 
     private final HttpUrlSource source;
     private final FileCache cache;
@@ -30,27 +34,29 @@ class HttpProxyCache extends ProxyCache {
 
     public void processRequest(GetRequest request, Socket socket) throws IOException, ProxyCacheException {
         OutputStream out = new BufferedOutputStream(socket.getOutputStream());
-        byte[] buffer = new byte[ProxyCacheUtils.DEFAULT_BUFFER_SIZE];
-        int readBytes;
-        boolean headersWrote = false;
+        String responseHeaders = newResponseHeaders(request);
+        out.write(responseHeaders.getBytes("UTF-8"));
+
         long offset = request.rangeOffset;
-        while ((readBytes = read(buffer, offset, buffer.length)) != -1) {
-            // tiny optimization: to prevent HEAD request in source for content-length. content-length 'll available after reading source
-            if (!headersWrote) {
-                String responseHeaders = newResponseHeaders(request);
-                out.write(responseHeaders.getBytes("UTF-8"));
-                headersWrote = true;
-            }
-            out.write(buffer, 0, readBytes);
-            offset += readBytes;
+        if (isUseCache(request)) {
+            responseWithCache(out, offset);
+        } else {
+            responseWithoutCache(out, offset);
         }
-        out.flush();
+    }
+
+    private boolean isUseCache(GetRequest request) throws ProxyCacheException {
+        int sourceLength = source.length();
+        boolean sourceLengthKnown = sourceLength > 0;
+        int cacheAvailable = cache.available();
+        // do not use cache for partial requests which too far from available cache. It seems user seek video.
+        return !sourceLengthKnown || !request.partial || request.rangeOffset <= cacheAvailable + sourceLength * NO_CACHE_BARRIER;
     }
 
     private String newResponseHeaders(GetRequest request) throws IOException, ProxyCacheException {
         String mime = source.getMime();
         boolean mimeKnown = !TextUtils.isEmpty(mime);
-        int length = cache.isCompleted() ? cache.available() : source.available();
+        int length = cache.isCompleted() ? cache.available() : source.length();
         boolean lengthKnown = length >= 0;
         long contentLength = request.partial ? length - request.rangeOffset : length;
         boolean addRange = lengthKnown && request.partial;
@@ -62,6 +68,32 @@ class HttpProxyCache extends ProxyCache {
                 .append(mimeKnown ? String.format("Content-Type: %s\n", mime) : "")
                 .append("\n") // headers end
                 .toString();
+    }
+
+    private void responseWithCache(OutputStream out, long offset) throws ProxyCacheException, IOException {
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int readBytes;
+        while ((readBytes = read(buffer, offset, buffer.length)) != -1) {
+            out.write(buffer, 0, readBytes);
+            offset += readBytes;
+        }
+        out.flush();
+    }
+
+    private void responseWithoutCache(OutputStream out, long offset) throws ProxyCacheException, IOException {
+        try {
+            HttpUrlSource source = new HttpUrlSource(this.source);
+            source.open((int) offset);
+            byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+            int readBytes;
+            while ((readBytes = source.read(buffer)) != -1) {
+                out.write(buffer, 0, readBytes);
+                offset += readBytes;
+            }
+            out.flush();
+        } finally {
+            source.close();
+        }
     }
 
     @Override
