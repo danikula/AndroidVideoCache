@@ -6,10 +6,10 @@ Because there is no sense to download video a lot of times while streaming!
 `AndroidVideoCache` allows to add caching support to your `VideoView/MediaPlayer`, [ExoPlayer](https://github.com/danikula/ExoPlayer/commit/6110be8559f003f98020ada8c5e09691b67aaff4) or any another player with help of single line!
 
 ## How to use?
-Just add link to repository and dependency:
+Just add dependency:
 ```
 repositories {
-    maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
+    jcenter()
 }
 dependencies {
     compile 'com.danikula:videocache:2.2.0'
