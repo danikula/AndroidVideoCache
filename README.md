@@ -79,7 +79,7 @@ or can limit total count of files in cache:
 ```java
 private HttpProxyCacheServer newProxy() {
     return new HttpProxyCacheServer.Builder(this)
-            .maxCacheSize(20)
+            .maxCacheFilesCount(20)
             .build();
 }
 ``` 
