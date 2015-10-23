@@ -5,8 +5,17 @@
 Because there is no sense to download video a lot of times while streaming!
 `AndroidVideoCache` allows to add caching support to your `VideoView/MediaPlayer`, [ExoPlayer](https://github.com/danikula/ExoPlayer/commit/6110be8559f003f98020ada8c5e09691b67aaff4) or any another player with help of single line!
 
+## Features
+- caching to disk during streaming;
+- offline work with cached resources;
+- partial loading;
+- cache limits (max cache size, max files count);
+- multiple clients for same url.
+
+Note `AndroidVideoCache` works only with **direct urls** to media file, it  [**doesn't support**](https://github.com/danikula/AndroidVideoCache/issues/19) any streaming technology like DASH, SmoothStreaming, HLS.  
+
 ## How to use?
-Just add dependency:
+Just add dependency (`AndroidVideoCache` is available in jcenter):
 ```
 repositories {
     jcenter()
@@ -47,14 +56,33 @@ public class App extends Application {
     }
 
     private HttpProxyCacheServer newProxy() {
-        FileNameGenerator nameGenerator = new Md5FileNameGenerator(getExternalCacheDir());
-        return new HttpProxyCacheServer(nameGenerator);
+        return new HttpProxyCacheServer(this);
     }
 }
 ```
 
-or use [simple factory](http://pastebin.com/38uNkgBT).
+or use [simple factory](http://pastebin.com/s2fafSYS).
 More preferable way is use some dependency injector like [Dagger](http://square.github.io/dagger/).
+
+By default `HttpProxyCacheServer` uses 512Mb for caching files. You can change this value:
+
+```java
+private HttpProxyCacheServer newProxy() {
+    return new HttpProxyCacheServer.Builder(this)
+            .maxCacheSize(1024 * 1024 * 1024)       // 1 Gb for cache
+            .build();
+}
+```    
+
+or can limit total count of files in cache: 
+
+```java
+private HttpProxyCacheServer newProxy() {
+    return new HttpProxyCacheServer.Builder(this)
+            .maxCacheSize(20)
+            .build();
+}
+``` 
 
 See `sample` app for details.
 
