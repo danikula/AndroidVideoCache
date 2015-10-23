@@ -125,7 +125,7 @@ public class HttpProxyCacheServerTest {
         assertThat(response.second.headers.containsKey("Accept-Ranges")).isTrue();
         assertThat(response.second.headers.get("Accept-Ranges").get(0)).isEqualTo("bytes");
         assertThat(response.second.headers.containsKey("Content-Range")).isTrue();
-        String rangeHeader = String.format("bytes %d-%d/%d", offset, HTTP_DATA_BIG_SIZE, HTTP_DATA_BIG_SIZE);
+        String rangeHeader = String.format("bytes %d-%d/%d", offset, HTTP_DATA_BIG_SIZE - 1, HTTP_DATA_BIG_SIZE);
         assertThat(response.second.headers.get("Content-Range").get(0)).isEqualTo(rangeHeader);
         byte[] expectedData = Arrays.copyOfRange(loadAssetFile(ASSETS_DATA_BIG_NAME), offset, HTTP_DATA_BIG_SIZE);
         assertThat(response.second.data).isEqualTo(expectedData);
@@ -143,7 +143,7 @@ public class HttpProxyCacheServerTest {
         assertThat(response.second.headers.containsKey("Accept-Ranges")).isTrue();
         assertThat(response.second.headers.get("Accept-Ranges").get(0)).isEqualTo("bytes");
         assertThat(response.second.headers.containsKey("Content-Range")).isTrue();
-        String rangeHeader = String.format("bytes %d-%d/%d", offset, HTTP_DATA_BIG_SIZE, HTTP_DATA_BIG_SIZE);
+        String rangeHeader = String.format("bytes %d-%d/%d", offset, HTTP_DATA_BIG_SIZE - 1, HTTP_DATA_BIG_SIZE);
         assertThat(response.second.headers.get("Content-Range").get(0)).isEqualTo(rangeHeader);
         byte[] expectedData = Arrays.copyOfRange(loadAssetFile(ASSETS_DATA_BIG_NAME), offset, HTTP_DATA_BIG_SIZE);
         assertThat(response.second.data).isEqualTo(expectedData);

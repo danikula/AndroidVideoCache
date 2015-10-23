@@ -66,7 +66,7 @@ class HttpProxyCache extends ProxyCache {
                 .append(request.partial ? "HTTP/1.1 206 PARTIAL CONTENT\n" : "HTTP/1.1 200 OK\n")
                 .append("Accept-Ranges: bytes\n")
                 .append(lengthKnown ? String.format("Content-Length: %d\n", contentLength) : "")
-                .append(addRange ? String.format("Content-Range: bytes %d-%d/%d\n", request.rangeOffset, length, length) : "")
+                .append(addRange ? String.format("Content-Range: bytes %d-%d/%d\n", request.rangeOffset, length - 1, length) : "")
                 .append(mimeKnown ? String.format("Content-Type: %s\n", mime) : "")
                 .append("\n") // headers end
                 .toString();
