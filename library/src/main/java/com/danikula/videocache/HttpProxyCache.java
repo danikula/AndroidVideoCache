@@ -2,6 +2,8 @@ package com.danikula.videocache;
 
 import android.text.TextUtils;
 
+import com.danikula.videocache.file.FileCache;
+
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;

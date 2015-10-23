@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import com.danikula.videocache.file.FileCache;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -24,12 +26,12 @@ final class HttpProxyCacheServerClients {
     private final String url;
     private volatile HttpProxyCache proxyCache;
     private final List<CacheListener> listeners = new CopyOnWriteArrayList<>();
-    private final FileNameGenerator fileNameGenerator;
     private final CacheListener uiCacheListener;
+    private final Config config;
 
-    public HttpProxyCacheServerClients(String url, FileNameGenerator fileNameGenerator) {
+    public HttpProxyCacheServerClients(String url, Config config) {
         this.url = checkNotNull(url);
-        this.fileNameGenerator = checkNotNull(fileNameGenerator);
+        this.config = checkNotNull(config);
         this.uiCacheListener = new UiListenerHandler(url, listeners);
     }
 
@@ -78,7 +80,7 @@ final class HttpProxyCacheServerClients {
 
     private HttpProxyCache newHttpProxyCache() throws ProxyCacheException {
         HttpUrlSource source = new HttpUrlSource(url);
-        FileCache cache = new FileCache(fileNameGenerator.generate(url));
+        FileCache cache = new FileCache(config.generateCacheFile(url), config.diskUsage);
         HttpProxyCache httpProxyCache = new HttpProxyCache(source, cache);
         httpProxyCache.registerCacheListener(uiCacheListener);
         return httpProxyCache;

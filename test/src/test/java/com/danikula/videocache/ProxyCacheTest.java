@@ -1,6 +1,7 @@
 package com.danikula.videocache;
 
 import com.danikula.android.garden.io.IoUtils;
+import com.danikula.videocache.file.FileCache;
 import com.danikula.videocache.support.AngryHttpUrlSource;
 import com.danikula.videocache.support.PhlegmaticByteArraySource;
 import com.danikula.videocache.test.BuildConfig;

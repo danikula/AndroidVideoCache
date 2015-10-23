@@ -3,10 +3,13 @@ package com.danikula.videocache;
 import android.util.Pair;
 
 import com.danikula.android.garden.io.IoUtils;
+import com.danikula.videocache.file.FileNameGenerator;
+import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
 import com.danikula.videocache.test.BuildConfig;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -17,12 +20,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static com.danikula.android.garden.io.Files.cleanDirectory;
+import static com.danikula.android.garden.io.Files.createDirectory;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_BIG_NAME;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_NAME;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_SIZE;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_URL;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_URL_ONE_REDIRECT;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_SIZE;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_3_REDIRECTS;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_6_REDIRECTS;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_ONE_REDIRECT;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getFileContent;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.readProxyResponse;
@@ -35,6 +44,15 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @Config(constants = BuildConfig.class, emulateSdk = BuildConfig.MIN_SDK_VERSION)
 public class HttpProxyCacheServerTest {
 
+    private File cacheFolder;
+
+    @Before
+    public void setup() throws Exception {
+        cacheFolder = ProxyCacheTestUtils.newCacheFile();
+        createDirectory(cacheFolder);
+        cleanDirectory(cacheFolder);
+    }
+
     @Test
     public void testHttpProxyCache() throws Exception {
         Pair<File, Response> response = readProxyData(HTTP_DATA_URL);
@@ -46,14 +64,14 @@ public class HttpProxyCacheServerTest {
 
     @Test
     public void testProxyContentWithPartialCache() throws Exception {
-        FileNameGenerator fileNameGenerator = new Md5FileNameGenerator(RuntimeEnvironment.application.getExternalCacheDir());
-        File file = fileNameGenerator.generate(HTTP_DATA_URL);
+        File cacheDir = RuntimeEnvironment.application.getExternalCacheDir();
+        File file = new File(cacheDir, new Md5FileNameGenerator().generate(HTTP_DATA_URL));
         int partialCacheSize = 1000;
         byte[] partialData = ProxyCacheTestUtils.generate(partialCacheSize);
         File partialCacheFile = ProxyCacheTestUtils.getTempFile(file);
         IoUtils.saveToFile(partialData, partialCacheFile);
 
-        HttpProxyCacheServer proxy = new HttpProxyCacheServer(fileNameGenerator);
+        HttpProxyCacheServer proxy = newProxy(cacheDir);
         Response response = readProxyResponse(proxy, HTTP_DATA_URL);
         proxy.shutdown();
 
@@ -132,11 +150,70 @@ public class HttpProxyCacheServerTest {
         assertThat(getFileContent(response.first)).isEqualTo(loadAssetFile(ASSETS_DATA_BIG_NAME));
     }
 
+    @Test
+    public void testMaxSizeCacheLimit() throws Exception {
+        HttpProxyCacheServer proxy = new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
+                .cacheDirectory(cacheFolder)
+                .maxCacheSize(HTTP_DATA_SIZE * 3 - 1) // for 2 files
+                .build();
+
+        // use different url (doesn't matter than same content)
+        readProxyResponse(proxy, HTTP_DATA_URL, 0);
+        Thread.sleep(1050); // wait for new last modified date (file rounds time to second)
+
+        readProxyResponse(proxy, HTTP_DATA_URL_ONE_REDIRECT, 0);
+        Thread.sleep(1050);
+
+        readProxyResponse(proxy, HTTP_DATA_URL_3_REDIRECTS, 0);
+        Thread.sleep(1050);
+
+        assertThat(file(cacheFolder, HTTP_DATA_URL)).doesNotExist();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_ONE_REDIRECT)).exists();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_3_REDIRECTS)).exists();
+
+        readProxyResponse(proxy, HTTP_DATA_URL_ONE_REDIRECT, 0); // touch file
+        readProxyResponse(proxy, HTTP_DATA_URL_6_REDIRECTS, 0);
+        proxy.shutdown();
+
+        assertThat(file(cacheFolder, HTTP_DATA_URL_3_REDIRECTS)).doesNotExist();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_ONE_REDIRECT)).exists();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_6_REDIRECTS)).exists();
+    }
+
+    @Test
+    public void testMaxFileCacheLimit() throws Exception {
+        HttpProxyCacheServer proxy = new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
+                .cacheDirectory(cacheFolder)
+                .maxCacheFilesCount(2)
+                .build();
+
+        // use different url (doesn't matter than same content)
+        readProxyResponse(proxy, HTTP_DATA_URL, 0);
+        Thread.sleep(1050); // wait for new last modified date (file rounds time to second)
+
+        readProxyResponse(proxy, HTTP_DATA_URL_ONE_REDIRECT, 0);
+        Thread.sleep(1050);
+
+        readProxyResponse(proxy, HTTP_DATA_URL_3_REDIRECTS, 0);
+        Thread.sleep(1050);
+
+        assertThat(file(cacheFolder, HTTP_DATA_URL)).doesNotExist();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_ONE_REDIRECT)).exists();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_3_REDIRECTS)).exists();
+
+        readProxyResponse(proxy, HTTP_DATA_URL_ONE_REDIRECT, 0); // touch file
+        readProxyResponse(proxy, HTTP_DATA_URL_6_REDIRECTS, 0);
+        proxy.shutdown();
+
+        assertThat(file(cacheFolder, HTTP_DATA_URL_3_REDIRECTS)).doesNotExist();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_ONE_REDIRECT)).exists();
+        assertThat(file(cacheFolder, HTTP_DATA_URL_6_REDIRECTS)).exists();
+    }
+
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
         File externalCacheDir = RuntimeEnvironment.application.getExternalCacheDir();
-        FileNameGenerator fileNameGenerator = new Md5FileNameGenerator(externalCacheDir);
-        File file = fileNameGenerator.generate(url);
-        HttpProxyCacheServer proxy = new HttpProxyCacheServer(fileNameGenerator);
+        File file = file(externalCacheDir, url);
+        HttpProxyCacheServer proxy = newProxy(externalCacheDir);
 
         Response response = readProxyResponse(proxy, url, offset);
         proxy.shutdown();
@@ -144,7 +221,19 @@ public class HttpProxyCacheServerTest {
         return new Pair<>(file, response);
     }
 
+    private File file(File parent, String url) {
+        FileNameGenerator fileNameGenerator = new Md5FileNameGenerator();
+        String name = fileNameGenerator.generate(url);
+        return new File(parent, name);
+    }
+
     private Pair<File, Response> readProxyData(String url) throws IOException {
         return readProxyData(url, -1);
+    }
+
+    private HttpProxyCacheServer newProxy(File cacheDir) {
+        return new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
+                .cacheDirectory(cacheDir)
+                .build();
     }
 }

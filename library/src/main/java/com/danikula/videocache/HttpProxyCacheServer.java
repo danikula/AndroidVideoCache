@@ -1,8 +1,16 @@
 package com.danikula.videocache;
 
+import android.content.Context;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.danikula.videocache.file.DiskUsage;
+import com.danikula.videocache.file.FileNameGenerator;
+import com.danikula.videocache.file.Md5FileNameGenerator;
+import com.danikula.videocache.file.TotalCountLruDiskUsage;
+import com.danikula.videocache.file.TotalSizeLruDiskUsage;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -56,11 +64,15 @@ public class HttpProxyCacheServer {
     private final ServerSocket serverSocket;
     private final int port;
     private final Thread waitConnectionThread;
-    private final FileNameGenerator fileNameGenerator;
+    private final Config config;
     private boolean pinged;
 
-    public HttpProxyCacheServer(FileNameGenerator fileNameGenerator) {
-        this.fileNameGenerator = checkNotNull(fileNameGenerator);
+    public HttpProxyCacheServer(Context context) {
+        this(new Builder(context).buildConfig());
+    }
+
+    private HttpProxyCacheServer(Config config) {
+        this.config = checkNotNull(config);
         try {
             InetAddress inetAddress = InetAddress.getByName(PROXY_HOST);
             this.serverSocket = new ServerSocket(0, 8, inetAddress);
@@ -231,7 +243,7 @@ public class HttpProxyCacheServer {
         synchronized (clientsLock) {
             HttpProxyCacheServerClients clients = clientsMap.get(url);
             if (clients == null) {
-                clients = new HttpProxyCacheServerClients(url, fileNameGenerator);
+                clients = new HttpProxyCacheServerClients(url, config);
                 clientsMap.put(url, clients);
             }
             return clients;
@@ -327,5 +339,95 @@ public class HttpProxyCacheServer {
         public Boolean call() throws Exception {
             return pingServer();
         }
+    }
+
+    /**
+     * Builder for {@link HttpProxyCacheServer}.
+     */
+    public static final class Builder {
+
+        private static final long DEFAULT_MAX_SIZE = 512 * 104 * 1024;
+
+        private File cacheRoot;
+        private FileNameGenerator fileNameGenerator;
+        private DiskUsage diskUsage;
+
+        public Builder(Context context) {
+            this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
+            this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
+            this.fileNameGenerator = new Md5FileNameGenerator();
+        }
+
+        /**
+         * Overrides default cache folder to be used for caching files.
+         * <p/>
+         * By default AndroidVideoCache uses
+         * '/Android/data/[app_package_name]/cache/video-cache/' if card is mounted and app has appropriate permission
+         * or 'video-cache' subdirectory in default application's cache directory otherwise.
+         * <p/>
+         * <b>Note</b> directory must be used <b>only</b> for AndroidVideoCache files.
+         *
+         * @param file a cache directory, can't be null.
+         * @return a builder.
+         */
+        public Builder cacheDirectory(File file) {
+            this.cacheRoot = checkNotNull(file);
+            return this;
+        }
+
+        /**
+         * Overrides default cache file name generator {@link Md5FileNameGenerator} .
+         *
+         * @param fileNameGenerator a new file name generator.
+         * @return a builder.
+         */
+        public Builder fileNameGenerator(FileNameGenerator fileNameGenerator) {
+            this.fileNameGenerator = checkNotNull(fileNameGenerator);
+            return this;
+        }
+
+        /**
+         * Sets max cache size in bytes.
+         * All files that exceeds limit will be deleted using LRU strategy.
+         * Default value is 512 Mb.
+         * <p/>
+         * Note this method overrides result of calling {@link #maxCacheFilesCount(int)}
+         *
+         * @param maxSize max cache size in bytes.
+         * @return a builder.
+         */
+        public Builder maxCacheSize(long maxSize) {
+            this.diskUsage = new TotalSizeLruDiskUsage(maxSize);
+            return this;
+        }
+
+        /**
+         * Sets max cache files count.
+         * All files that exceeds limit will be deleted using LRU strategy.
+         * <p/>
+         * Note this method overrides result of calling {@link #maxCacheSize(long)}
+         *
+         * @param count max cache files count.
+         * @return a builder.
+         */
+        public Builder maxCacheFilesCount(int count) {
+            this.diskUsage = new TotalCountLruDiskUsage(count);
+            return this;
+        }
+
+        /**
+         * Builds new instance of {@link HttpProxyCacheServer}.
+         *
+         * @return proxy cache. Only single instance should be used across whole app.
+         */
+        public HttpProxyCacheServer build() {
+            Config config = buildConfig();
+            return new HttpProxyCacheServer(config);
+        }
+
+        private Config buildConfig() {
+            return new Config(cacheRoot, fileNameGenerator, diskUsage);
+        }
+
     }
 }

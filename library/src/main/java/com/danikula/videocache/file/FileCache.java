@@ -1,10 +1,11 @@
-package com.danikula.videocache;
+package com.danikula.videocache.file;
+
+import com.danikula.videocache.Cache;
+import com.danikula.videocache.ProxyCacheException;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
-import static com.danikula.videocache.Preconditions.checkNotNull;
 
 /**
  * {@link Cache} that uses file for storing data.
@@ -15,13 +16,22 @@ public class FileCache implements Cache {
 
     private static final String TEMP_POSTFIX = ".download";
 
+    private final DiskUsage diskUsage;
     public File file;
     private RandomAccessFile dataFile;
 
     public FileCache(File file) throws ProxyCacheException {
+        this(file, new UnlimitedDiskUsage());
+    }
+
+    public FileCache(File file, DiskUsage diskUsage) throws ProxyCacheException {
         try {
-            checkNotNull(file);
-            ProxyCacheUtils.createDirectory(file.getParentFile());
+            if (diskUsage == null) {
+                throw new NullPointerException();
+            }
+            this.diskUsage = diskUsage;
+            File directory = file.getParentFile();
+            Files.makeDir(directory);
             boolean completed = file.exists();
             this.file = completed ? file : new File(file.getParentFile(), file.getName() + TEMP_POSTFIX);
             this.dataFile = new RandomAccessFile(this.file, completed ? "r" : "rw");
@@ -68,6 +78,7 @@ public class FileCache implements Cache {
     public synchronized void close() throws ProxyCacheException {
         try {
             dataFile.close();
+            diskUsage.touch(file);
         } catch (IOException e) {
             throw new ProxyCacheException("Error closing file " + file, e);
         }

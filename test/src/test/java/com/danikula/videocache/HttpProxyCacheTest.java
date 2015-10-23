@@ -1,5 +1,6 @@
 package com.danikula.videocache;
 
+import com.danikula.videocache.file.FileCache;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
 import com.danikula.videocache.test.BuildConfig;

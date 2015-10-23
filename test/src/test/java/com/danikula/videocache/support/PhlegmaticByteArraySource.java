@@ -8,6 +8,7 @@ import java.util.Random;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
+@Deprecated // TODO: use Mockito to mock delay
 public class PhlegmaticByteArraySource extends ByteArraySource {
 
     private final Random delayGenerator;

@@ -1,5 +1,7 @@
 package com.danikula.videocache;
 
+import com.danikula.videocache.file.FileNameGenerator;
+import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Test;
@@ -63,20 +65,15 @@ public class FileNameGeneratorTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void testAssertNullRoot() throws Exception {
-        new Md5FileNameGenerator(null);
-        fail("Root folder should be not null");
-    }
-
-    @Test(expected = NullPointerException.class)
     public void testAssertNullUrl() throws Exception {
-        FileNameGenerator nameGenerator = new Md5FileNameGenerator(new File("/"));
+        FileNameGenerator nameGenerator = new Md5FileNameGenerator();
         nameGenerator.generate(null);
         fail("Url should be not null");
     }
 
     private String generateMd5Name(String rootFolder, String url) {
-        FileNameGenerator nameGenerator = new Md5FileNameGenerator(new File(rootFolder));
-        return nameGenerator.generate(url).getAbsolutePath();
+        FileNameGenerator nameGenerator = new Md5FileNameGenerator();
+        String name = nameGenerator.generate(url);
+        return new File(rootFolder, name).getAbsolutePath();
     }
 }

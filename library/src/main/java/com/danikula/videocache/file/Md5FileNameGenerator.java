@@ -1,10 +1,8 @@
-package com.danikula.videocache;
+package com.danikula.videocache.file;
 
 import android.text.TextUtils;
 
-import java.io.File;
-
-import static com.danikula.videocache.Preconditions.checkNotNull;
+import com.danikula.videocache.ProxyCacheUtils;
 
 /**
  * Implementation of {@link FileNameGenerator} that uses MD5 of url as file name
@@ -14,19 +12,12 @@ import static com.danikula.videocache.Preconditions.checkNotNull;
 public class Md5FileNameGenerator implements FileNameGenerator {
 
     private static final int MAX_EXTENSION_LENGTH = 4;
-    private final File cacheDirectory;
-
-    public Md5FileNameGenerator(File cacheDirectory) {
-        this.cacheDirectory = checkNotNull(cacheDirectory);
-    }
 
     @Override
-    public File generate(String url) {
-        checkNotNull(url);
+    public String generate(String url) {
         String extension = getExtension(url);
         String name = ProxyCacheUtils.computeMD5(url);
-        name = TextUtils.isEmpty(extension) ? name : name + "." + extension;
-        return new File(cacheDirectory, name);
+        return TextUtils.isEmpty(extension) ? name : name + "." + extension;
     }
 
     private String getExtension(String url) {

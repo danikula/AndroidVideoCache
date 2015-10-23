@@ -8,6 +8,7 @@ import com.danikula.videocache.Source;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
+@Deprecated // use Mockito to throw error
 public class AngryHttpUrlSource implements Source {
 
     @Override

@@ -1,6 +1,4 @@
-package com.danikula.videocache;
-
-import java.io.File;
+package com.danikula.videocache.file;
 
 /**
  * Generator for files to be used for caching.
@@ -9,6 +7,6 @@ import java.io.File;
  */
 public interface FileNameGenerator {
 
-    File generate(String url);
+    String generate(String url);
 
 }
