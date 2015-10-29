@@ -38,7 +38,7 @@ dependencies {
 //    compile project(':library')
     compile 'com.android.support:support-v4:23.1.0'
     compile 'org.androidannotations:androidannotations-api:3.3.2'
-    compile 'com.danikula:videocache:2.3.2'
+    compile 'com.danikula:videocache:2.3.3'
     compile 'com.viewpagerindicator:library:2.4.2-SNAPSHOT@aar'
     apt 'org.androidannotations:androidannotations:3.3.2'
 }
