@@ -58,7 +58,7 @@ public class HttpUrlSource implements Source {
     @Override
     public void open(int offset) throws ProxyCacheException {
         try {
-            connection = openConnection(offset, "GET", -1);
+            connection = openConnection(offset, -1);
             mime = connection.getContentType();
             inputStream = new BufferedInputStream(connection.getInputStream(), DEFAULT_BUFFER_SIZE);
             length = readSourceAvailableBytes(connection, offset, connection.getResponseCode());
@@ -76,7 +76,11 @@ public class HttpUrlSource implements Source {
     @Override
     public void close() throws ProxyCacheException {
         if (connection != null) {
-            connection.disconnect();
+            try {
+                connection.disconnect();
+            } catch (NullPointerException e) {
+                throw new ProxyCacheException("Error disconnecting HttpUrlConnection", e);
+            }
         }
     }
 
@@ -91,6 +95,10 @@ public class HttpUrlSource implements Source {
             throw new InterruptedProxyCacheException("Reading source " + url + " is interrupted", e);
         } catch (IOException e) {
             throw new ProxyCacheException("Error reading data from " + url, e);
+        } catch (NullPointerException e) {
+            throw new ProxyCacheException("Error reading data with NullPointerException from " + url, e);
+        } catch (Exception e) {
+            throw new ProxyCacheException("Unknown exception " + url, e);
         }
     }
 
@@ -99,7 +107,7 @@ public class HttpUrlSource implements Source {
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
-            urlConnection = openConnection(0, "HEAD", 10000);
+            urlConnection = openConnection(0, 10000);
             length = urlConnection.getContentLength();
             mime = urlConnection.getContentType();
             inputStream = urlConnection.getInputStream();
@@ -114,7 +122,7 @@ public class HttpUrlSource implements Source {
         }
     }
 
-    private HttpURLConnection openConnection(int offset, String method, int timeout) throws IOException, ProxyCacheException {
+    private HttpURLConnection openConnection(int offset, int timeout) throws IOException, ProxyCacheException {
         HttpURLConnection connection;
         boolean redirected;
         int redirectCount = 0;
@@ -122,7 +130,6 @@ public class HttpUrlSource implements Source {
         do {
             Log.d(LOG_TAG, "Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
             connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setRequestMethod(method);
             if (offset > 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");
             }
