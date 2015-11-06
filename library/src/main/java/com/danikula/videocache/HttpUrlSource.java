@@ -76,7 +76,11 @@ public class HttpUrlSource implements Source {
     @Override
     public void close() throws ProxyCacheException {
         if (connection != null) {
-            connection.disconnect();
+            try {
+                connection.disconnect();
+            } catch (NullPointerException e) {
+                throw new ProxyCacheException("Error disconnecting HttpUrlConnection", e);
+            }
         }
     }
 
@@ -91,6 +95,10 @@ public class HttpUrlSource implements Source {
             throw new InterruptedProxyCacheException("Reading source " + url + " is interrupted", e);
         } catch (IOException e) {
             throw new ProxyCacheException("Error reading data from " + url, e);
+        } catch (NullPointerException e) {
+            throw new ProxyCacheException("Error reading data with NullPointerException from " + url, e);
+        } catch (Exception e) {
+            throw new ProxyCacheException("Unknown exception " + url, e);
         }
     }
 
