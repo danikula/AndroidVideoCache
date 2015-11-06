@@ -12,6 +12,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.Socket;
 
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL;
@@ -20,6 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -72,5 +74,25 @@ public class HttpProxyCacheTest {
         System.arraycopy(fullData, 2000, partialData, 0, partialData.length);
         assertThat(response.data).isEqualTo(partialData);
         assertThat(response.code).isEqualTo(206);
+    }
+
+    @Test
+    public void testLoadEmptyFile() throws Exception {
+        String zeroSizeUrl = "https://dl.dropboxusercontent.com/u/15506779/persistent/proxycache/empty.txt";
+        HttpUrlSource source = new HttpUrlSource(zeroSizeUrl);
+        HttpProxyCache proxyCache = new HttpProxyCache(source, new FileCache(ProxyCacheTestUtils.newCacheFile()));
+        GetRequest request = new GetRequest("GET /" + HTTP_DATA_URL + " HTTP/1.1");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Socket socket = mock(Socket.class);
+        when(socket.getOutputStream()).thenReturn(out);
+
+        CacheListener listener = Mockito.mock(CacheListener.class);
+        proxyCache.registerCacheListener(listener);
+        proxyCache.processRequest(request, socket);
+        proxyCache.registerCacheListener(null);
+        Response response = new Response(out.toByteArray());
+
+        Mockito.verify(listener).onCacheAvailable(Mockito.<File>any(), eq(zeroSizeUrl), eq(100));
+        assertThat(response.data).isEmpty();
     }
 }

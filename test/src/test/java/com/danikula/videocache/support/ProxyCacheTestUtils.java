@@ -40,7 +40,11 @@ public class ProxyCacheTestUtils {
     }
 
     public static Response readProxyResponse(HttpProxyCacheServer proxy, String url, int offset) throws IOException {
-        URL proxiedUrl = new URL(proxy.getProxyUrl(url));
+        String proxyUrl = proxy.getProxyUrl(url);
+        if (!proxyUrl.startsWith("http://127.0.0.1")) {
+            throw new IllegalStateException("Url " + url + " is not proxied!");
+        }
+        URL proxiedUrl = new URL(proxyUrl);
         HttpURLConnection connection = (HttpURLConnection) proxiedUrl.openConnection();
         try {
             if (offset >= 0) {

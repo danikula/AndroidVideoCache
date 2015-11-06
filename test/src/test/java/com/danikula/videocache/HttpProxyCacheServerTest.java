@@ -211,9 +211,8 @@ public class HttpProxyCacheServerTest {
     }
 
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
-        File externalCacheDir = RuntimeEnvironment.application.getExternalCacheDir();
-        File file = file(externalCacheDir, url);
-        HttpProxyCacheServer proxy = newProxy(externalCacheDir);
+        File file = file(cacheFolder, url);
+        HttpProxyCacheServer proxy = newProxy(cacheFolder);
 
         Response response = readProxyResponse(proxy, url, offset);
         proxy.shutdown();

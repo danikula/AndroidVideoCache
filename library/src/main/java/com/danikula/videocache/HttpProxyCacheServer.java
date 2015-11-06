@@ -91,7 +91,7 @@ public class HttpProxyCacheServer {
 
     private void makeSureServerWorks() {
         int maxPingAttempts = 3;
-        int delay = 200;
+        int delay = 300;
         int pingAttempts = 0;
         while (pingAttempts < maxPingAttempts) {
             try {
@@ -107,7 +107,7 @@ public class HttpProxyCacheServer {
             pingAttempts++;
             delay *= 2;
         }
-        Log.e(LOG_TAG, "Shutdown server… Error pinging server [attempt: " + pingAttempts + ", timeout: " + delay + "]. " +
+        Log.e(LOG_TAG, "Shutdown server… Error pinging server [attempts: " + pingAttempts + ", max timeout: " + delay / 2 + "]. " +
                 "If you see this message, please, email me danikula@gmail.com");
         shutdown();
     }
