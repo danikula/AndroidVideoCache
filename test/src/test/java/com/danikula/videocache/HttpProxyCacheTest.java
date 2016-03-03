@@ -78,7 +78,7 @@ public class HttpProxyCacheTest {
 
     @Test
     public void testLoadEmptyFile() throws Exception {
-        String zeroSizeUrl = "https://dl.dropboxusercontent.com/u/15506779/persistent/proxycache/empty.txt";
+        String zeroSizeUrl = "https://raw.githubusercontent.com/danikula/AndroidVideoCache/master/files/empty.txt";
         HttpUrlSource source = new HttpUrlSource(zeroSizeUrl);
         HttpProxyCache proxyCache = new HttpProxyCache(source, new FileCache(ProxyCacheTestUtils.newCacheFile()));
         GetRequest request = new GetRequest("GET /" + HTTP_DATA_URL + " HTTP/1.1");
