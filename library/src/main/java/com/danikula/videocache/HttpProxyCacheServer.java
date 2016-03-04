@@ -10,13 +10,16 @@ import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.file.TotalCountLruDiskUsage;
 import com.danikula.videocache.file.TotalSizeLruDiskUsage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -52,6 +55,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
+@SuppressWarnings("UnusedDeclaration")
 public class HttpProxyCacheServer {
 
     private static final String PROXY_HOST = "127.0.0.1";
@@ -140,6 +144,32 @@ public class HttpProxyCacheServer {
 
     private String appendToProxyUrl(String url) {
         return String.format("http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
+    }
+
+    /**
+     * Pre fetch the url into the cache.
+     * @param url The url to fetch
+     * @throws IOException
+     */
+    public void fetch(String url) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        InputStream is = null;
+        try {
+            URL fetchUrl = new URL(getProxyUrl(url));
+            is = fetchUrl.openStream();
+            byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
+            int n;
+
+            while ((n = is.read(byteChunk)) > 0) {
+                baos.write(byteChunk, 0, n);
+            }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, String.format("Failed while reading bytes from %s: %s", url, e.getMessage()));
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
     }
 
     public void registerCacheListener(CacheListener cacheListener, String url) {
