@@ -27,6 +27,8 @@ public class ProxyCacheUtils {
     static final int DEFAULT_BUFFER_SIZE = 8 * 1024;
     static final int MAX_ARRAY_PREVIEW = 16;
 
+    private static Logger sLogger = new Logger("ProxyCacheUtils");
+
     static String getSupposablyMime(String url) {
         MimeTypeMap mimes = MimeTypeMap.getSingleton();
         String extension = MimeTypeMap.getFileExtensionFromUrl(url);
@@ -70,7 +72,7 @@ public class ProxyCacheUtils {
             try {
                 closeable.close();
             } catch (IOException e) {
-                Log.e(LOG_TAG, "Error closing resource", e);
+                sLogger.e("Error closing resource", e);
             }
         }
     }

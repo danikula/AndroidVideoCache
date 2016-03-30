@@ -1,11 +1,8 @@
 package com.danikula.videocache;
 
-import android.util.Log;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.danikula.videocache.Preconditions.checkNotNull;
-import static com.danikula.videocache.ProxyCacheUtils.LOG_TAG;
 
 /**
  * Proxy for {@link Source} with caching support ({@link Cache}).
@@ -19,6 +16,8 @@ import static com.danikula.videocache.ProxyCacheUtils.LOG_TAG;
 class ProxyCache {
 
     private static final int MAX_READ_SOURCE_ATTEMPTS = 1;
+
+    private Logger mLogger = new Logger("ProxyCache");
 
     private final Source source;
     private final Cache cache;
@@ -61,7 +60,7 @@ class ProxyCache {
 
     public void shutdown() {
         synchronized (stopLock) {
-            Log.d(LOG_TAG, "Shutdown proxy for " + source);
+            mLogger.d("Shutdown proxy for " + source);
             try {
                 stopped = true;
                 if (sourceReaderThread != null) {
@@ -75,7 +74,8 @@ class ProxyCache {
     }
 
     private synchronized void readSourceAsync() throws ProxyCacheException {
-        boolean readingInProgress = sourceReaderThread != null && sourceReaderThread.getState() != Thread.State.TERMINATED;
+        boolean readingInProgress = sourceReaderThread != null
+                && sourceReaderThread.getState() != Thread.State.TERMINATED;
         if (!stopped && !cache.isCompleted() && !readingInProgress) {
             sourceReaderThread = new Thread(new SourceReaderRunnable(), "Source reader for " + source);
             sourceReaderThread.start();
@@ -166,9 +166,9 @@ class ProxyCache {
     protected final void onError(final Throwable e) {
         boolean interruption = e instanceof InterruptedProxyCacheException;
         if (interruption) {
-            Log.d(LOG_TAG, "ProxyCache is interrupted");
+            mLogger.d("ProxyCache is interrupted");
         } else {
-            Log.e(LOG_TAG, "ProxyCache error", e);
+            mLogger.e("ProxyCache error", e);
         }
     }
 
