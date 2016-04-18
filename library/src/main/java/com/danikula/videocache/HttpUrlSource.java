@@ -1,7 +1,6 @@
 package com.danikula.videocache;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
-import static com.danikula.videocache.ProxyCacheUtils.LOG_TAG;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -24,6 +22,8 @@ import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
  * @author Alexey Danilov (danikula@gmail.com).
  */
 public class HttpUrlSource implements Source {
+
+    private Logger mLogger = new Logger("HttpUrlSource");
 
     private static final int MAX_REDIRECTS = 5;
     public final String url;
@@ -67,7 +67,8 @@ public class HttpUrlSource implements Source {
         }
     }
 
-    private int readSourceAvailableBytes(HttpURLConnection connection, int offset, int responseCode) throws IOException {
+    private int readSourceAvailableBytes(HttpURLConnection connection,
+                                         int offset, int responseCode) throws IOException {
         int contentLength = connection.getContentLength();
         return responseCode == HTTP_OK ? contentLength
                 : responseCode == HTTP_PARTIAL ? contentLength + offset : length;
@@ -78,9 +79,11 @@ public class HttpUrlSource implements Source {
         if (connection != null) {
             try {
                 connection.disconnect();
-            } catch (NullPointerException e) {
-                // https://github.com/danikula/AndroidVideoCache/issues/32
+            } catch (NullPointerException | ArrayIndexOutOfBoundsException
+                    | IllegalArgumentException | IllegalStateException e) {
                 // https://github.com/danikula/AndroidVideoCache/issues/29
+                // https://github.com/danikula/AndroidVideoCache/issues/32
+                // https://github.com/danikula/AndroidVideoCache/issues/50
                 throw new ProxyCacheException("Error disconnecting HttpUrlConnection", e);
             }
         }
@@ -101,7 +104,7 @@ public class HttpUrlSource implements Source {
     }
 
     private void fetchContentInfo() throws ProxyCacheException {
-        Log.d(LOG_TAG, "Read content info from " + url);
+        mLogger.d("Read content info from " + url);
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
@@ -109,9 +112,9 @@ public class HttpUrlSource implements Source {
             length = urlConnection.getContentLength();
             mime = urlConnection.getContentType();
             inputStream = urlConnection.getInputStream();
-            Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + length);
+            mLogger.i("Content info for `" + url + "`: mime: " + mime + ", content-length: " + length);
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Error fetching info from " + url, e);
+            mLogger.e("Error fetching info from " + url, e);
         } finally {
             ProxyCacheUtils.close(inputStream);
             if (urlConnection != null) {
@@ -126,7 +129,7 @@ public class HttpUrlSource implements Source {
         int redirectCount = 0;
         String url = this.url;
         do {
-            Log.d(LOG_TAG, "Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
+            mLogger.d("Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
             connection = (HttpURLConnection) new URL(url).openConnection();
             if (offset > 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");

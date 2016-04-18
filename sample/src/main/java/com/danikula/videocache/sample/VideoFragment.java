@@ -78,7 +78,7 @@ public class VideoFragment extends Fragment implements CacheListener {
     @Override
     public void onCacheAvailable(File file, String url, int percentsAvailable) {
         progressBar.setSecondaryProgress(percentsAvailable);
-        Log.d(LOG_TAG, String.format("onCacheAvailable. percents: %d, file: %s, url: %s", percentsAvailable, file, url));
+        mLogger.d(LOG_TAG, String.format("onCacheAvailable. percents: %d, file: %s, url: %s", percentsAvailable, file, url));
     }
 
     private void updateVideoProgress() {
