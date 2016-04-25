@@ -78,9 +78,10 @@ public class HttpUrlSource implements Source {
         if (connection != null) {
             try {
                 connection.disconnect();
-            } catch (NullPointerException e) {
+            } catch (NullPointerException | ArrayIndexOutOfBoundsException | IllegalArgumentException | IllegalStateException e) {
                 // https://github.com/danikula/AndroidVideoCache/issues/32
                 // https://github.com/danikula/AndroidVideoCache/issues/29
+                // https://github.com/danikula/AndroidVideoCache/issues/50
                 throw new ProxyCacheException("Error disconnecting HttpUrlConnection", e);
             }
         }
