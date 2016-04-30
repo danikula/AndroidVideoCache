@@ -1,6 +1,7 @@
 package com.danikula.videocache;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -66,6 +67,7 @@ public class HttpProxyCacheServer {
     private final Thread waitConnectionThread;
     private final Config config;
     private boolean pinged;
+    private ContentInfoDbHelper dbHelper;
 
     public HttpProxyCacheServer(Context context) {
         this(new Builder(context).buildConfig());
@@ -350,11 +352,13 @@ public class HttpProxyCacheServer {
         private File cacheRoot;
         private FileNameGenerator fileNameGenerator;
         private DiskUsage diskUsage;
+        private SQLiteDatabase contentInfoDb;
 
         public Builder(Context context) {
             this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
             this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
             this.fileNameGenerator = new Md5FileNameGenerator();
+            this.contentInfoDb = new ContentInfoDbHelper(context).getWritableDatabase();
         }
 
         /**
@@ -425,7 +429,7 @@ public class HttpProxyCacheServer {
         }
 
         private Config buildConfig() {
-            return new Config(cacheRoot, fileNameGenerator, diskUsage);
+            return new Config(cacheRoot, fileNameGenerator, diskUsage, contentInfoDb);
         }
 
     }

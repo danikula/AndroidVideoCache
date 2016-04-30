@@ -1,5 +1,7 @@
 package com.danikula.videocache;
 
+import android.database.sqlite.SQLiteDatabase;
+
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
 
@@ -15,11 +17,13 @@ class Config {
     public final File cacheRoot;
     public final FileNameGenerator fileNameGenerator;
     public final DiskUsage diskUsage;
+    public final SQLiteDatabase contentInfoDb;
 
-    Config(File cacheRoot, FileNameGenerator fileNameGenerator, DiskUsage diskUsage) {
+    Config(File cacheRoot, FileNameGenerator fileNameGenerator, DiskUsage diskUsage, SQLiteDatabase contentInfoDb) {
         this.cacheRoot = cacheRoot;
         this.fileNameGenerator = fileNameGenerator;
         this.diskUsage = diskUsage;
+        this.contentInfoDb = contentInfoDb;
     }
 
     File generateCacheFile(String url) {
