@@ -1,6 +1,9 @@
 package com.danikula.videocache;
 
 import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -66,14 +69,30 @@ public class HttpProxyCacheServer {
     private final Thread waitConnectionThread;
     private final Config config;
     private boolean pinged;
+    private Context context;
+    private String localIp = "192.168.104.77";
 
     public HttpProxyCacheServer(Context context) {
         this(new Builder(context).buildConfig());
+        this.context = context;
     }
 
     private HttpProxyCacheServer(Config config) {
         this.config = checkNotNull(config);
         try {
+            // above LOLLIPOP build, must use real ip address
+            if (Build.VERSION.SDK_INT >= 21/*Build.VERSION_CODES.LOLLIPOP*/) {
+                // get the real ip under wifi status
+                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                int ipAddress = wifiInfo.getIpAddress();
+                localIp = ProxyCacheUtils.intToIp(ipAddress);
+            } else {
+                localIp = "127.0.0.1";
+            }
+            //Log.d(LOG_TAG, "get local ip:" + localIp);
+
             InetAddress inetAddress = InetAddress.getByName(PROXY_HOST);
             this.serverSocket = new ServerSocket(0, 8, inetAddress);
             this.port = serverSocket.getLocalPort();

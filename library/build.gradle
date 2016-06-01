@@ -19,7 +19,7 @@ idea {
 }
 
 dependencies {
-    compile 'com.google.android:android:1.6_r2'
+    compile 'com.google.android:android:4.1.1.4'
 }
 
 publish {
