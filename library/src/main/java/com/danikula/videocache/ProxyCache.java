@@ -18,7 +18,7 @@ import static com.danikula.videocache.ProxyCacheUtils.LOG_TAG;
  */
 class ProxyCache {
 
-    private static final int MAX_READ_SOURCE_ATTEMPTS = 1;
+    private static final int MAX_READ_SOURCE_ATTEMPTS = 6;
 
     private final Source source;
     private final Cache cache;
