@@ -3,6 +3,7 @@ package com.danikula.videocache.file;
 import android.text.TextUtils;
 
 import com.danikula.videocache.ProxyCacheUtils;
+import com.sun.istack.internal.Nullable;
 
 /**
  * Implementation of {@link FileNameGenerator} that uses MD5 of url as file name
@@ -14,13 +15,23 @@ public class Md5FileNameGenerator implements FileNameGenerator {
     private static final int MAX_EXTENSION_LENGTH = 4;
 
     @Override
+    @Nullable
     public String generate(String url) {
+        if(TextUtils.isEmpty(url)) {
+            return url;
+        }
+
         String extension = getExtension(url);
         String name = ProxyCacheUtils.computeMD5(url);
         return TextUtils.isEmpty(extension) ? name : name + "." + extension;
     }
 
+    @Nullable
     private String getExtension(String url) {
+        if(TextUtils.isEmpty(url)) {
+            return url;
+        }
+
         int dotIndex = url.lastIndexOf('.');
         int slashIndex = url.lastIndexOf('/');
         return dotIndex != -1 && dotIndex > slashIndex && dotIndex + 2 + MAX_EXTENSION_LENGTH > url.length() ?
