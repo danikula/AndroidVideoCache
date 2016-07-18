@@ -1,7 +1,12 @@
 package com.danikula.videocache;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.danikula.videocache.ContentInfoContract.ContentInfoEntry;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -31,20 +36,27 @@ public class HttpUrlSource implements Source {
     private InputStream inputStream;
     private volatile int length = Integer.MIN_VALUE;
     private volatile String mime;
+    private SQLiteDatabase contentInfoDb;
 
     public HttpUrlSource(String url) {
-        this(url, ProxyCacheUtils.getSupposablyMime(url));
+        this(url, ProxyCacheUtils.getSupposablyMime(url), null);
     }
 
-    public HttpUrlSource(String url, String mime) {
+    public HttpUrlSource(String url, SQLiteDatabase contentInfoDb) {
+        this(url, ProxyCacheUtils.getSupposablyMime(url), contentInfoDb);
+    }
+
+    public HttpUrlSource(String url, String mime, SQLiteDatabase contentInfoDb) {
         this.url = Preconditions.checkNotNull(url);
         this.mime = mime;
+        this.contentInfoDb = contentInfoDb;
     }
 
     public HttpUrlSource(HttpUrlSource source) {
         this.url = source.url;
         this.mime = source.mime;
         this.length = source.length;
+        this.contentInfoDb = source.contentInfoDb;
     }
 
     @Override
@@ -102,20 +114,55 @@ public class HttpUrlSource implements Source {
 
     private void fetchContentInfo() throws ProxyCacheException {
         Log.d(LOG_TAG, "Read content info from " + url);
-        HttpURLConnection urlConnection = null;
-        InputStream inputStream = null;
-        try {
-            urlConnection = openConnection(0, 10000);
-            length = urlConnection.getContentLength();
-            mime = urlConnection.getContentType();
-            inputStream = urlConnection.getInputStream();
-            Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + length);
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error fetching info from " + url, e);
-        } finally {
-            ProxyCacheUtils.close(inputStream);
-            if (urlConnection != null) {
-                urlConnection.disconnect();
+
+        boolean fetchedViaSQLite = false;
+
+        // Check via SQLite
+        if (contentInfoDb != null) {
+            // Query SQLite to see if it contains the content info locally
+            String selectQuery = "SELECT * FROM " + ContentInfoEntry.TABLE_NAME + " WHERE " +
+                    ContentInfoEntry.COLUMN_NAME_URL + " = '" + url + "'";
+            Cursor cursor = contentInfoDb.rawQuery(selectQuery, null);
+
+            // SQLite contained the content info
+            if (cursor != null && cursor.getCount() > 0) {
+                cursor.moveToFirst();
+                mime = cursor.getString(cursor.getColumnIndex(ContentInfoEntry.COLUMN_NAME_MIME));
+                length = cursor.getInt(cursor.getColumnIndex(ContentInfoEntry.COLUMN_NAME_LENGTH));
+                fetchedViaSQLite = true;
+                Log.i(LOG_TAG, "Read from SQLite: mime=" + mime + ", content-length=" + length);
+                cursor.close();
+            }
+        }
+
+        // Check via HttpURLConnection
+        if (!fetchedViaSQLite) {
+            HttpURLConnection urlConnection = null;
+            InputStream inputStream = null;
+            try {
+                urlConnection = openConnection(0, 10000);
+                length = urlConnection.getContentLength();
+                mime = urlConnection.getContentType();
+                inputStream = urlConnection.getInputStream();
+
+                // Write to SQLite
+                if (contentInfoDb != null) {
+                    ContentValues values = new ContentValues();
+                    values.put(ContentInfoEntry.COLUMN_NAME_URL, url);
+                    values.put(ContentInfoEntry.COLUMN_NAME_MIME, mime);
+                    values.put(ContentInfoEntry.COLUMN_NAME_LENGTH, length);
+                    contentInfoDb.insert(ContentInfoEntry.TABLE_NAME, null, values);
+                    Log.i(LOG_TAG, "Wrote to SQLite: url=`" + url + "`, mime=" + mime + ", content-length=" + length);
+                }
+
+                Log.i(LOG_TAG, "Content info for `" + url + "`: mime: " + mime + ", content-length: " + length);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error fetching info from " + url, e);
+            } finally {
+                ProxyCacheUtils.close(inputStream);
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
             }
         }
     }
@@ -126,7 +173,7 @@ public class HttpUrlSource implements Source {
         int redirectCount = 0;
         String url = this.url;
         do {
-            Log.d(LOG_TAG, "Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
+            Log.d(LOG_TAG, "Open connection" + (offset > 0 ? " with offset " + offset : "") + " to " + url);
             connection = (HttpURLConnection) new URL(url).openConnection();
             if (offset > 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");

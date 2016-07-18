@@ -82,7 +82,7 @@ public class HttpProxyCacheServerTest {
 
     @Test
     public void testMimeFromResponse() throws Exception {
-        Pair<File, Response> response = readProxyData("https://dl.dropboxusercontent.com/u/15506779/persistent/proxycache/android");
+        Pair<File, Response> response = readProxyData("https://raw.githubusercontent.com/danikula/AndroidVideoCache/master/files/android");
         assertThat(response.second.contentType).isEqualTo("application/octet-stream");
     }
 
