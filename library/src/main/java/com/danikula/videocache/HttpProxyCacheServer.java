@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.SystemClock;
 import android.util.Log;
-
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileDeleteListener;
 import com.danikula.videocache.file.FileNameGenerator;
@@ -12,16 +11,22 @@ import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.file.TotalCountLruDiskUsage;
 import com.danikula.videocache.file.TotalSizeLruDiskUsage;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -121,20 +126,35 @@ public class HttpProxyCacheServer {
 
     private boolean pingServer() throws ProxyCacheException {
         String pingUrl = appendToProxyUrl(PING_REQUEST);
-        HttpUrlSource source = new HttpUrlSource(pingUrl);
+
+        StringBuilder sb = new StringBuilder();
+        InputStream is = null;
+
         try {
-            byte[] expectedResponse = PING_RESPONSE.getBytes();
-            source.open(0);
-            byte[] response = new byte[expectedResponse.length];
-            source.read(response);
-            boolean pingOk = Arrays.equals(expectedResponse, response);
-            Log.d(LOG_TAG, "Ping response: `" + new String(response) + "`, pinged? " + pingOk);
-            return pingOk;
-        } catch (ProxyCacheException e) {
-            Log.e(LOG_TAG, "Error reading ping response", e);
+            //Don't try to use a proxy to access our proxy. Proxyception.
+            HttpURLConnection connection = (HttpURLConnection) new URL(pingUrl).openConnection(Proxy.NO_PROXY);
+
+            is = new BufferedInputStream(connection.getInputStream());
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String inputLine;
+            while ((inputLine = br.readLine()) != null) {
+                sb.append(inputLine);
+            }
+            return PING_RESPONSE.equals(sb.toString());
+        }
+        catch (Exception e) {
+            Log.i(LOG_TAG, "Error reading InputStream");
             return false;
-        } finally {
-            source.close();
+        }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {
+                    Log.i(LOG_TAG, "Error closing InputStream");
+                }
+            }
         }
     }
 
