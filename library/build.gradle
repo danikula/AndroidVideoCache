@@ -32,7 +32,7 @@ publish {
     groupId = 'com.github.jarrodholliday'
     artifactId = 'videocache'
     uploadName = 'AndroidVideoCache'
-    version = '2.3.10'
+    version = '2.3.11'
     description = 'Cache support for android VideoView'
     website = 'https://github.com/jarrodholliday/AndroidVideoCache'
     bintrayUser = properties.getProperty("bintray.user")
