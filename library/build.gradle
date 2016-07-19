@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.novoda:bintray-release:0.2.10'
+        classpath 'com.novoda:bintray-release:0.3.5'
     }
 }
 
@@ -26,10 +26,16 @@ dependencies {
 }
 
 publish {
-    userOrg = 'alexeydanilov'
-    groupId = 'com.danikula'
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    userOrg = 'jarrodholliday'
+    groupId = 'com.github.jarrodholliday'
     artifactId = 'videocache'
-    publishVersion = '2.3.4'
+    uploadName = 'AndroidVideoCache'
+    version = '2.3.10'
     description = 'Cache support for android VideoView'
-    website = 'https://github.com/danikula/AndroidVideoCache'
+    website = 'https://github.com/jarrodholliday/AndroidVideoCache'
+    bintrayUser = properties.getProperty("bintray.user")
+    bintrayKey = properties.getProperty("bintray.apikey")
+    dryRun = false
 }
