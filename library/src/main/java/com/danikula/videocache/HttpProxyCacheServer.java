@@ -1,23 +1,32 @@
 package com.danikula.videocache;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.SystemClock;
 import android.util.Log;
 
 import com.danikula.videocache.file.DiskUsage;
+import com.danikula.videocache.file.FileDeleteListener;
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.file.TotalCountLruDiskUsage;
 import com.danikula.videocache.file.TotalSizeLruDiskUsage;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Arrays;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +61,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
+@SuppressWarnings("UnusedDeclaration")
 public class HttpProxyCacheServer {
 
     private static final String PROXY_HOST = "127.0.0.1";
@@ -66,6 +76,7 @@ public class HttpProxyCacheServer {
     private final Thread waitConnectionThread;
     private final Config config;
     private boolean pinged;
+    private ContentInfoDbHelper dbHelper;
 
     public HttpProxyCacheServer(Context context) {
         this(new Builder(context).buildConfig());
@@ -114,20 +125,35 @@ public class HttpProxyCacheServer {
 
     private boolean pingServer() throws ProxyCacheException {
         String pingUrl = appendToProxyUrl(PING_REQUEST);
-        HttpUrlSource source = new HttpUrlSource(pingUrl);
+
+        StringBuilder sb = new StringBuilder();
+        InputStream is = null;
+
         try {
-            byte[] expectedResponse = PING_RESPONSE.getBytes();
-            source.open(0);
-            byte[] response = new byte[expectedResponse.length];
-            source.read(response);
-            boolean pingOk = Arrays.equals(expectedResponse, response);
-            Log.d(LOG_TAG, "Ping response: `" + new String(response) + "`, pinged? " + pingOk);
-            return pingOk;
-        } catch (ProxyCacheException e) {
-            Log.e(LOG_TAG, "Error reading ping response", e);
+            //Don't try to use a proxy to access our proxy. Proxyception.
+            HttpURLConnection connection = (HttpURLConnection) new URL(pingUrl).openConnection(Proxy.NO_PROXY);
+
+            is = new BufferedInputStream(connection.getInputStream());
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String inputLine;
+            while ((inputLine = br.readLine()) != null) {
+                sb.append(inputLine);
+            }
+            return PING_RESPONSE.equals(sb.toString());
+        }
+        catch (Exception e) {
+            Log.i(LOG_TAG, "Error reading InputStream");
             return false;
-        } finally {
-            source.close();
+        }
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                }
+                catch (IOException e) {
+                    Log.i(LOG_TAG, "Error closing InputStream");
+                }
+            }
         }
     }
 
@@ -140,6 +166,33 @@ public class HttpProxyCacheServer {
 
     private String appendToProxyUrl(String url) {
         return String.format("http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
+    }
+
+    /**
+     * Pre fetch the url into the cache.
+     * @param url The url to fetch
+     * @throws IOException
+     */
+    public void fetch(String url) throws IOException, ProxyCacheException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        InputStream is = null;
+        try {
+            URL fetchUrl = new URL(getProxyUrl(url));
+            is = fetchUrl.openStream();
+            byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
+            int n;
+
+            while ((n = is.read(byteChunk)) > 0) {
+                baos.write(byteChunk, 0, n);
+            }
+        } catch (Exception e) {
+            Log.d(LOG_TAG, String.format("Failed while reading bytes from %s: %s", url, e.getMessage()));
+            throw new ProxyCacheException(String.format("Failed while reading bytes from %s", url), e);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
     }
 
     public void registerCacheListener(CacheListener cacheListener, String url) {
@@ -307,7 +360,7 @@ public class HttpProxyCacheServer {
 
         private final CountDownLatch startSignal;
 
-        public WaitRequestsRunnable(CountDownLatch startSignal) {
+        WaitRequestsRunnable(CountDownLatch startSignal) {
             this.startSignal = startSignal;
         }
 
@@ -322,7 +375,7 @@ public class HttpProxyCacheServer {
 
         private final Socket socket;
 
-        public SocketProcessorRunnable(Socket socket) {
+        SocketProcessorRunnable(Socket socket) {
             this.socket = socket;
         }
 
@@ -345,16 +398,19 @@ public class HttpProxyCacheServer {
      */
     public static final class Builder {
 
-        private static final long DEFAULT_MAX_SIZE = 512 * 104 * 1024;
+        private static final long DEFAULT_MAX_SIZE = 512 * 1024 * 1024;
 
         private File cacheRoot;
         private FileNameGenerator fileNameGenerator;
         private DiskUsage diskUsage;
+        private FileDeleteListener fileDeleteListener;
+        private SQLiteDatabase contentInfoDb;
 
         public Builder(Context context) {
             this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
             this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
             this.fileNameGenerator = new Md5FileNameGenerator();
+            this.contentInfoDb = new ContentInfoDbHelper(context).getWritableDatabase();
         }
 
         /**
@@ -415,17 +471,31 @@ public class HttpProxyCacheServer {
         }
 
         /**
+         * Listens to the files that being deleted from the cache by the LRU
+         *
+         * @param fileDeleteListener a listener for files that are deleted from cache
+         * @return a builder
+         */
+        public Builder setFileDeleteListener(FileDeleteListener fileDeleteListener) {
+            this.fileDeleteListener = fileDeleteListener;
+            return this;
+        }
+
+        /**
          * Builds new instance of {@link HttpProxyCacheServer}.
          *
          * @return proxy cache. Only single instance should be used across whole app.
          */
         public HttpProxyCacheServer build() {
+            if (fileDeleteListener != null) {
+                this.diskUsage.setFileDeleteListener(fileDeleteListener);
+            }
             Config config = buildConfig();
             return new HttpProxyCacheServer(config);
         }
 
         private Config buildConfig() {
-            return new Config(cacheRoot, fileNameGenerator, diskUsage);
+            return new Config(cacheRoot, fileNameGenerator, diskUsage, contentInfoDb);
         }
 
     }

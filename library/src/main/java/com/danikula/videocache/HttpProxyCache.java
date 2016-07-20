@@ -48,6 +48,10 @@ class HttpProxyCache extends ProxyCache {
     }
 
     private boolean isUseCache(GetRequest request) throws ProxyCacheException {
+        if(cache.isCompleted()) {
+            return true;
+        }
+
         int sourceLength = source.length();
         boolean sourceLengthKnown = sourceLength > 0;
         int cacheAvailable = cache.available();
