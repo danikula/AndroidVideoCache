@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.SystemClock;
 import android.util.Log;
+
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileDeleteListener;
 import com.danikula.videocache.file.FileNameGenerator;
@@ -26,8 +27,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
-import java.util.Locale;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -174,7 +173,7 @@ public class HttpProxyCacheServer {
      * @param url The url to fetch
      * @throws IOException
      */
-    public void fetch(String url) throws IOException {
+    public void fetch(String url) throws IOException, ProxyCacheException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         InputStream is = null;
         try {
@@ -188,6 +187,7 @@ public class HttpProxyCacheServer {
             }
         } catch (Exception e) {
             Log.d(LOG_TAG, String.format("Failed while reading bytes from %s: %s", url, e.getMessage()));
+            throw new ProxyCacheException(String.format("Failed while reading bytes from %s", url), e);
         } finally {
             if (is != null) {
                 is.close();
@@ -226,7 +226,7 @@ public class HttpProxyCacheServer {
         }
     }
 
-    public void shutdown() {
+    void shutdown() {
         Log.i(LOG_TAG, "Shutdown proxy server");
 
         shutdownClients();
@@ -360,7 +360,7 @@ public class HttpProxyCacheServer {
 
         private final CountDownLatch startSignal;
 
-        public WaitRequestsRunnable(CountDownLatch startSignal) {
+        WaitRequestsRunnable(CountDownLatch startSignal) {
             this.startSignal = startSignal;
         }
 
@@ -375,7 +375,7 @@ public class HttpProxyCacheServer {
 
         private final Socket socket;
 
-        public SocketProcessorRunnable(Socket socket) {
+        SocketProcessorRunnable(Socket socket) {
             this.socket = socket;
         }
 
@@ -396,7 +396,7 @@ public class HttpProxyCacheServer {
     /**
      * Builder for {@link HttpProxyCacheServer}.
      */
-    public static final class Builder {
+    static final class Builder {
 
         private static final long DEFAULT_MAX_SIZE = 512 * 1024 * 1024;
 
@@ -406,7 +406,7 @@ public class HttpProxyCacheServer {
         private FileDeleteListener fileDeleteListener;
         private SQLiteDatabase contentInfoDb;
 
-        public Builder(Context context) {
+        Builder(Context context) {
             this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
             this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
             this.fileNameGenerator = new Md5FileNameGenerator();
@@ -425,7 +425,7 @@ public class HttpProxyCacheServer {
          * @param file a cache directory, can't be null.
          * @return a builder.
          */
-        public Builder cacheDirectory(File file) {
+        Builder cacheDirectory(File file) {
             this.cacheRoot = checkNotNull(file);
             return this;
         }
@@ -451,7 +451,7 @@ public class HttpProxyCacheServer {
          * @param maxSize max cache size in bytes.
          * @return a builder.
          */
-        public Builder maxCacheSize(long maxSize) {
+        Builder maxCacheSize(long maxSize) {
             this.diskUsage = new TotalSizeLruDiskUsage(maxSize);
             return this;
         }
@@ -465,7 +465,7 @@ public class HttpProxyCacheServer {
          * @param count max cache files count.
          * @return a builder.
          */
-        public Builder maxCacheFilesCount(int count) {
+        Builder maxCacheFilesCount(int count) {
             this.diskUsage = new TotalCountLruDiskUsage(count);
             return this;
         }
@@ -486,7 +486,7 @@ public class HttpProxyCacheServer {
          *
          * @return proxy cache. Only single instance should be used across whole app.
          */
-        public HttpProxyCacheServer build() {
+        HttpProxyCacheServer build() {
             if (fileDeleteListener != null) {
                 this.diskUsage.setFileDeleteListener(fileDeleteListener);
             }
