@@ -226,7 +226,7 @@ public class HttpProxyCacheServer {
         }
     }
 
-    void shutdown() {
+    public void shutdown() {
         Log.i(LOG_TAG, "Shutdown proxy server");
 
         shutdownClients();
@@ -396,7 +396,7 @@ public class HttpProxyCacheServer {
     /**
      * Builder for {@link HttpProxyCacheServer}.
      */
-    static final class Builder {
+    public static final class Builder {
 
         private static final long DEFAULT_MAX_SIZE = 512 * 1024 * 1024;
 
@@ -406,7 +406,7 @@ public class HttpProxyCacheServer {
         private FileDeleteListener fileDeleteListener;
         private SQLiteDatabase contentInfoDb;
 
-        Builder(Context context) {
+        public Builder(Context context) {
             this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
             this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
             this.fileNameGenerator = new Md5FileNameGenerator();
@@ -425,7 +425,7 @@ public class HttpProxyCacheServer {
          * @param file a cache directory, can't be null.
          * @return a builder.
          */
-        Builder cacheDirectory(File file) {
+        public Builder cacheDirectory(File file) {
             this.cacheRoot = checkNotNull(file);
             return this;
         }
@@ -451,7 +451,7 @@ public class HttpProxyCacheServer {
          * @param maxSize max cache size in bytes.
          * @return a builder.
          */
-        Builder maxCacheSize(long maxSize) {
+        public Builder maxCacheSize(long maxSize) {
             this.diskUsage = new TotalSizeLruDiskUsage(maxSize);
             return this;
         }
@@ -465,7 +465,7 @@ public class HttpProxyCacheServer {
          * @param count max cache files count.
          * @return a builder.
          */
-        Builder maxCacheFilesCount(int count) {
+        public Builder maxCacheFilesCount(int count) {
             this.diskUsage = new TotalCountLruDiskUsage(count);
             return this;
         }
@@ -486,7 +486,7 @@ public class HttpProxyCacheServer {
          *
          * @return proxy cache. Only single instance should be used across whole app.
          */
-        HttpProxyCacheServer build() {
+        public HttpProxyCacheServer build() {
             if (fileDeleteListener != null) {
                 this.diskUsage.setFileDeleteListener(fileDeleteListener);
             }
