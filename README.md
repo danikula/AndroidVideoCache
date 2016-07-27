@@ -64,6 +64,7 @@ public class App extends Application {
 or use [simple factory](http://pastebin.com/s2fafSYS).
 More preferable way is use some dependency injector like [Dagger](http://square.github.io/dagger/).
 
+## Configuration
 By default `HttpProxyCacheServer` uses 512Mb for caching files. You can change this value:
 
 ```java
@@ -94,9 +95,11 @@ If it's a feature that you think would need to be discussed please open an issue
 
 1. [Fork the project](http://help.github.com/fork-a-repo/)
 2. Create a feature branch (git checkout -b my_branch)
-3. Push your changes to your new branch (git push origin my_branch)
-4. Initiate a [pull request](http://help.github.com/send-pull-requests/) on github
-5. Your pull request will be reviewed and hopefully merged :)
+3. Fix a problem. Your code **must** contain test for reproducing problem. Your tests **must be passed** with help of your fix
+4. Push your changes to your new branch (git push origin my_branch)
+5. Initiate a [pull request](http://help.github.com/send-pull-requests/) on github
+6. Rebase [master branch](https://github.com/danikula/AndroidVideoCache) if your local branch is not actual. Merging is not acceptable, only rebase
+6. Your pull request will be reviewed and hopefully merged :)
 
 ## Where published?
 [Here](https://bintray.com/alexeydanilov/maven/videocache/view)
@@ -106,7 +109,7 @@ If it's a feature that you think would need to be discussed please open an issue
 
 ## License
 
-    Copyright 2014-2015 Alexey Danilov
+    Copyright 2014-2016 Alexey Danilov
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
