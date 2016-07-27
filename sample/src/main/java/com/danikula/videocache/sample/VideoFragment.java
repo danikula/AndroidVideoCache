@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.VideoView;
 
@@ -27,6 +28,7 @@ public class VideoFragment extends Fragment implements CacheListener {
     @FragmentArg String url;
     @FragmentArg String cachePath;
 
+    @ViewById ImageView cacheStatusImageView;
     @ViewById VideoView videoView;
     @ViewById ProgressBar progressBar;
 
@@ -45,7 +47,14 @@ public class VideoFragment extends Fragment implements CacheListener {
 
     @AfterViews
     void afterViewInjected() {
+        checkCachedState();
         startVideo();
+    }
+
+    private void checkCachedState() {
+        HttpProxyCacheServer proxy = App.getProxy(getActivity());
+        boolean fullyCached = proxy.isCached(url);
+        setCachedState(fullyCached);
     }
 
     private void startVideo() {
@@ -78,6 +87,7 @@ public class VideoFragment extends Fragment implements CacheListener {
     @Override
     public void onCacheAvailable(File file, String url, int percentsAvailable) {
         progressBar.setSecondaryProgress(percentsAvailable);
+        setCachedState(percentsAvailable == 100);
         Log.d(LOG_TAG, String.format("onCacheAvailable. percents: %d, file: %s, url: %s", percentsAvailable, file, url));
     }
 
@@ -90,6 +100,11 @@ public class VideoFragment extends Fragment implements CacheListener {
     void seekVideo() {
         int videoPosition = videoView.getDuration() * progressBar.getProgress() / 100;
         videoView.seekTo(videoPosition);
+    }
+
+    private void setCachedState(boolean cached) {
+        int statusIconId = cached ? R.drawable.ic_cloud_done : R.drawable.ic_cloud_download;
+        cacheStatusImageView.setImageResource(statusIconId);
     }
 
     private final class VideoProgressUpdater extends Handler {

@@ -173,6 +173,20 @@ public class HttpProxyCacheServer {
         }
     }
 
+    /**
+     * Checks is cache contains fully cached file for particular url.
+     *
+     * @param url an url cache file will be checked for.
+     * @return {@code true} if cache contains fully cached file for passed in parameters url.
+     */
+    public boolean isCached(String url) {
+        checkNotNull(url, "Url can't be null!");
+        File cacheDir = config.cacheRoot;
+        String fileName = config.fileNameGenerator.generate(url);
+        File cacheFile = new File(cacheDir, fileName);
+        return cacheFile.exists();
+    }
+
     public void shutdown() {
         Log.i(LOG_TAG, "Shutdown proxy server");
 

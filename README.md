@@ -14,14 +14,14 @@ Because there is no sense to download video a lot of times while streaming!
 
 Note `AndroidVideoCache` works only with **direct urls** to media file, it  [**doesn't support**](https://github.com/danikula/AndroidVideoCache/issues/19) any streaming technology like DASH, SmoothStreaming, HLS.  
 
-## How to use?
+## Get started
 Just add dependency (`AndroidVideoCache` is available in jcenter):
 ```
 repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.danikula:videocache:2.3.4'
+    compile 'com.danikula:videocache:2.4.0'
 }
 ```
 
@@ -64,7 +64,8 @@ public class App extends Application {
 or use [simple factory](http://pastebin.com/s2fafSYS).
 More preferable way is use some dependency injector like [Dagger](http://square.github.io/dagger/).
 
-## Configuration
+## Recipes
+### Disk cache limit
 By default `HttpProxyCacheServer` uses 512Mb for caching files. You can change this value:
 
 ```java
@@ -83,9 +84,17 @@ private HttpProxyCacheServer newProxy() {
             .maxCacheFilesCount(20)
             .build();
 }
-``` 
+```
 
-See `sample` app for details.
+### Listen caching progress
+Use `HttpProxyCacheServer.registerCacheListener(CacheListener listener)` method to set listener with callback `onCacheAvailable(File cacheFile, String url, int percentsAvailable)` to be aware of caching progress. Do not forget to to unsubscribe listener with help of `HttpProxyCacheServer.unregisterCacheListener(CacheListener listener)` method to avoid memory leaks.
+
+Use `HttpProxyCacheServer.isCached(String url)` method to check was url's content fully cached to file or not.
+
+See `sample` app for more details.
+
+### Sample
+See `sample` app.
 
 ## Whats new
 See Release Notes [here](https://github.com/danikula/AndroidVideoCache/releases)

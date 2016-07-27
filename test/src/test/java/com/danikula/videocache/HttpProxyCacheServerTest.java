@@ -210,6 +210,52 @@ public class HttpProxyCacheServerTest {
         assertThat(file(cacheFolder, HTTP_DATA_URL_6_REDIRECTS)).exists();
     }
 
+    @Test
+    public void testCheckFileExistForNotCachedUrl() throws Exception {
+        HttpProxyCacheServer proxy = newProxy(cacheFolder);
+        proxy.shutdown();
+        assertThat(proxy.isCached(HTTP_DATA_URL)).isFalse();
+    }
+
+    @Test
+    public void testCheckFileExistForFullyCachedUrl() throws Exception {
+        HttpProxyCacheServer proxy = newProxy(cacheFolder);
+        readProxyResponse(proxy, HTTP_DATA_URL, 0);
+        proxy.shutdown();
+
+        assertThat(proxy.isCached(HTTP_DATA_URL)).isTrue();
+    }
+
+    @Test
+    public void testCheckFileExistForPartiallyCachedUrl() throws Exception {
+        File cacheDir = RuntimeEnvironment.application.getExternalCacheDir();
+        File file = file(cacheDir, HTTP_DATA_URL);
+        int partialCacheSize = 1000;
+        byte[] partialData = ProxyCacheTestUtils.generate(partialCacheSize);
+        File partialCacheFile = ProxyCacheTestUtils.getTempFile(file);
+        IoUtils.saveToFile(partialData, partialCacheFile);
+
+        HttpProxyCacheServer proxy = newProxy(cacheDir);
+        assertThat(proxy.isCached(HTTP_DATA_URL)).isFalse();
+
+        readProxyResponse(proxy, HTTP_DATA_URL);
+        proxy.shutdown();
+
+        assertThat(proxy.isCached(HTTP_DATA_URL)).isTrue();
+    }
+
+    @Test
+    public void testCheckFileExistForDeletedCacheFile() throws Exception {
+        HttpProxyCacheServer proxy = newProxy(cacheFolder);
+        readProxyResponse(proxy, HTTP_DATA_URL, 0);
+        proxy.shutdown();
+        File cacheFile = file(cacheFolder, HTTP_DATA_URL);
+        boolean deleted = cacheFile.delete();
+
+        assertThat(deleted).isTrue();
+        assertThat(proxy.isCached(HTTP_DATA_URL)).isFalse();
+    }
+
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
         File file = file(cacheFolder, url);
         HttpProxyCacheServer proxy = newProxy(cacheFolder);
