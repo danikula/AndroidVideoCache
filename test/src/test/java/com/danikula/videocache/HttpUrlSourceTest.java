@@ -11,6 +11,7 @@ import org.robolectric.annotation.Config;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
+import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_BIG_NAME;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_NAME;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_BIG_SIZE;
@@ -83,7 +84,7 @@ public class HttpUrlSourceTest {
         HttpUrlSource source = new HttpUrlSource(HTTP_DATA_URL_ONE_REDIRECT);
         source.open(0);
         byte[] readData = new byte[HTTP_DATA_SIZE];
-        source.read(readData);
+        readSource(source, readData);
         source.close();
 
         byte[] expectedData = Arrays.copyOfRange(loadAssetFile(ASSETS_DATA_NAME), 0, HTTP_DATA_SIZE);
@@ -96,7 +97,7 @@ public class HttpUrlSourceTest {
         HttpUrlSource source = new HttpUrlSource(HTTP_DATA_URL_ONE_REDIRECT);
         source.open(offset);
         byte[] readData = new byte[HTTP_DATA_SIZE - offset];
-        source.read(readData);
+        readSource(source, readData);
         source.close();
 
         byte[] expectedData = Arrays.copyOfRange(loadAssetFile(ASSETS_DATA_NAME), offset, HTTP_DATA_SIZE);
@@ -109,7 +110,7 @@ public class HttpUrlSourceTest {
         HttpUrlSource source = new HttpUrlSource(HTTP_DATA_URL_3_REDIRECTS);
         source.open(offset);
         byte[] readData = new byte[HTTP_DATA_SIZE - offset];
-        source.read(readData);
+        readSource(source, readData);
         source.close();
 
         byte[] expectedData = Arrays.copyOfRange(loadAssetFile(ASSETS_DATA_NAME), offset, HTTP_DATA_SIZE);
@@ -129,5 +130,15 @@ public class HttpUrlSourceTest {
     public void testMimeByUrl() throws Exception {
         assertThat(new HttpUrlSource("http://mysite.by/video.mp4").getMime()).isEqualTo("video/mp4");
         assertThat(new HttpUrlSource(HTTP_DATA_URL).getMime()).isEqualTo("image/jpeg");
+    }
+
+    private void readSource(Source source, byte[] target) throws ProxyCacheException {
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int totalRead = 0;
+        int readBytes;
+        while ((readBytes = source.read(buffer)) != -1) {
+            System.arraycopy(buffer, 0, target, totalRead, readBytes);
+            totalRead += readBytes;
+        }
     }
 }
