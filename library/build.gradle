@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.novoda:bintray-release:0.2.10'
+        classpath 'com.novoda:bintray-release:0.3.4'
     }
 }
 
@@ -17,6 +17,9 @@ idea {
         downloadSources = true
     }
 }
+
+targetCompatibility = '1.7'
+sourceCompatibility = '1.7'
 
 dependencies {
     compile 'com.google.android:android:1.6_r2'
