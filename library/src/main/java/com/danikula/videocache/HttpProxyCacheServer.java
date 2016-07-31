@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.danikula.videocache.file.DiskUsage;
+import com.danikula.videocache.file.FileDeleteListener;
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.file.TotalCountLruDiskUsage;
@@ -364,6 +365,7 @@ public class HttpProxyCacheServer {
         private File cacheRoot;
         private FileNameGenerator fileNameGenerator;
         private DiskUsage diskUsage;
+        private FileDeleteListener fileDeleteListener;
 
         public Builder(Context context) {
             this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
@@ -429,11 +431,25 @@ public class HttpProxyCacheServer {
         }
 
         /**
+         * Listens to the files that being deleted from the cache by the LRU
+         *
+         * @param fileDeleteListener a listener for files that are deleted from cache
+         * @return a builder
+         */
+        public Builder setFileDeleteListener(FileDeleteListener fileDeleteListener) {
+            this.fileDeleteListener = fileDeleteListener;
+            return this;
+        }
+
+        /**
          * Builds new instance of {@link HttpProxyCacheServer}.
          *
          * @return proxy cache. Only single instance should be used across whole app.
          */
         public HttpProxyCacheServer build() {
+            if (fileDeleteListener != null) {
+                this.diskUsage.setFileDeleteListener(fileDeleteListener);
+            }
             Config config = buildConfig();
             return new HttpProxyCacheServer(config);
         }

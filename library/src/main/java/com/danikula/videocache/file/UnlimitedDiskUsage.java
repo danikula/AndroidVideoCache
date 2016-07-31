@@ -14,4 +14,9 @@ public class UnlimitedDiskUsage implements DiskUsage {
     public void touch(File file) throws IOException {
         // do nothing
     }
+
+    @Override
+    public void setFileDeleteListener(FileDeleteListener fileDeleteListener) {
+        // do nothing
+    }
 }

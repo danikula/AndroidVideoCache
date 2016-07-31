@@ -18,10 +18,16 @@ abstract class LruDiskUsage implements DiskUsage {
 
     private static final String LOG_TAG = "ProxyCache";
     private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
+    private FileDeleteListener fileDeleteListener;
 
     @Override
     public void touch(File file) throws IOException {
         workerThread.submit(new TouchCallable(file));
+    }
+
+    @Override
+    public void setFileDeleteListener(FileDeleteListener fileDeleteListener) {
+        this.fileDeleteListener = fileDeleteListener;
     }
 
     private void touchInBackground(File file) throws IOException {
@@ -43,6 +49,9 @@ abstract class LruDiskUsage implements DiskUsage {
                 if (deleted) {
                     totalCount--;
                     totalSize -= fileSize;
+                    if(fileDeleteListener != null){
+                        fileDeleteListener.onFileDeleted(file.getName());
+                    }
                     Log.i(LOG_TAG, "Cache file " + file + " is deleted because it exceeds cache limit");
                 } else {
                     Log.e(LOG_TAG, "Error deleting file " + file + " for trimming cache");
