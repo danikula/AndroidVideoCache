@@ -1,5 +1,20 @@
-# Video cache support for Android
+## Video cache support for Android
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AndroidVideoCache-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1751)
+
+## Table of Content
+- [Why AndroidVideoCache?](#why-androidvideocache)
+- [Features](#features)
+- [Get started](#get-started)
+- [Recipes](#recipes)
+  - [Disk cache limit](#disk-cache-limit)
+  - [Listen caching progress](#listen-caching-progress)
+  - [Sample](#sample)
+- [Known problems](#known-problems)
+- [Whats new](#whats-new)
+- [Code contributions](#code-contributions)
+- [Where published?](#where-published)
+- [Questions?](#questions)
+- [License](#license)
 
 ## Why AndroidVideoCache?
 Because there is no sense to download video a lot of times while streaming!
@@ -95,6 +110,9 @@ See `sample` app for more details.
 
 ### Sample
 See `sample` app.
+
+## Known problems
+`AndroidVideoCache` [doesn't work](https://github.com/danikula/AndroidVideoCache/issues/28) if wifi or mobile internet connection uses proxy.
 
 ## Whats new
 See Release Notes [here](https://github.com/danikula/AndroidVideoCache/releases)
