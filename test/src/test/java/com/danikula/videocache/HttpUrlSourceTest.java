@@ -29,7 +29,7 @@ import static org.fest.assertions.api.Assertions.fail;
  * @author Alexey Danilov (danikula@gmail.com).
  */
 @RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, emulateSdk = BuildConfig.MIN_SDK_VERSION)
+@Config(constants = BuildConfig.class)
 public class HttpUrlSourceTest {
 
     @Test

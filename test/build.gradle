@@ -15,14 +15,6 @@ android {
         versionCode 1
         versionName '0.1'
     }
-    buildTypes {
-        debug {
-            buildConfigField "int", "MIN_SDK_VERSION", Integer.toString(android.defaultConfig.minSdkVersion.apiLevel)
-        }
-        release {
-            buildConfigField "int", "MIN_SDK_VERSION", Integer.toString(android.defaultConfig.minSdkVersion.apiLevel)
-        }
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
@@ -30,13 +22,10 @@ android {
 }
 
 dependencies {
-    compile project (':library')
+    compile project(':library')
 
     testCompile 'junit:junit:4.12'
-    testCompile('org.robolectric:robolectric:3.0-rc2') {
-        exclude group: 'commons-logging', module: 'commons-logging'
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }
+    testCompile 'org.robolectric:robolectric:3.1'
     testCompile 'com.squareup:fest-android:1.0.0'
     testCompile 'com.google.guava:guava-jdk5:17.0'
     testCompile('com.danikula:android-garden:2.1.4') {
