@@ -101,7 +101,7 @@ class HttpProxyCache extends ProxyCache {
     @Override
     protected void onCachePercentsAvailableChanged(int percents) {
         if (listener != null) {
-            listener.onCacheAvailable(cache.file, source.url, percents);
+            listener.onCacheAvailable(cache.file, source.getUrl(), percents);
         }
     }
 }

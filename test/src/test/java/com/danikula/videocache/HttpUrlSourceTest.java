@@ -1,10 +1,14 @@
 package com.danikula.videocache;
 
+import com.danikula.videocache.sourcestorage.SourceInfoStorage;
+import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
+import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
@@ -24,6 +28,7 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_
 import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
+import static org.mockito.Matchers.any;
 
 /**
  * @author Alexey Danilov (danikula@gmail.com).
@@ -130,6 +135,31 @@ public class HttpUrlSourceTest {
     public void testMimeByUrl() throws Exception {
         assertThat(new HttpUrlSource("http://mysite.by/video.mp4").getMime()).isEqualTo("video/mp4");
         assertThat(new HttpUrlSource(HTTP_DATA_URL).getMime()).isEqualTo("image/jpeg");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testAngryHttpUrlSourceLength() throws Exception {
+        ProxyCacheTestUtils.newAngryHttpUrlSource().length();
+        fail("source.length() should throw exception");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testAngryHttpUrlSourceOpen() throws Exception {
+        ProxyCacheTestUtils.newAngryHttpUrlSource().open(Mockito.anyInt());
+        fail("source.open() should throw exception");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testAngryHttpUrlSourceRead() throws Exception {
+        ProxyCacheTestUtils.newAngryHttpUrlSource().read(any(byte[].class));
+        fail("source.read() should throw exception");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testNotOpenableHttpUrlSourceOpen() throws Exception {
+        SourceInfoStorage sourceInfoStorage = SourceInfoStorageFactory.newEmptySourceInfoStorage();
+        ProxyCacheTestUtils.newNotOpenableHttpUrlSource("", sourceInfoStorage).open(Mockito.anyInt());
+        fail("source.open() should throw exception");
     }
 
     private void readSource(Source source, byte[] target) throws ProxyCacheException {

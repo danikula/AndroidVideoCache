@@ -9,6 +9,8 @@ import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.file.TotalCountLruDiskUsage;
 import com.danikula.videocache.file.TotalSizeLruDiskUsage;
+import com.danikula.videocache.sourcestorage.SourceInfoStorage;
+import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -192,6 +194,8 @@ public class HttpProxyCacheServer {
 
         shutdownClients();
 
+        config.sourceInfoStorage.release();
+
         waitConnectionThread.interrupt();
         try {
             if (!serverSocket.isClosed()) {
@@ -364,8 +368,10 @@ public class HttpProxyCacheServer {
         private File cacheRoot;
         private FileNameGenerator fileNameGenerator;
         private DiskUsage diskUsage;
+        private SourceInfoStorage sourceInfoStorage;
 
         public Builder(Context context) {
+            this.sourceInfoStorage = SourceInfoStorageFactory.newSourceInfoStorage(context);
             this.cacheRoot = StorageUtils.getIndividualCacheDirectory(context);
             this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
             this.fileNameGenerator = new Md5FileNameGenerator();
@@ -439,7 +445,7 @@ public class HttpProxyCacheServer {
         }
 
         private Config buildConfig() {
-            return new Config(cacheRoot, fileNameGenerator, diskUsage);
+            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage);
         }
 
     }

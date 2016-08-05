@@ -1,9 +1,16 @@
 package com.danikula.videocache.support;
 
 import com.danikula.android.garden.io.IoUtils;
+import com.danikula.videocache.ByteArraySource;
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.danikula.videocache.HttpUrlSource;
+import com.danikula.videocache.ProxyCacheException;
+import com.danikula.videocache.Source;
+import com.danikula.videocache.sourcestorage.SourceInfoStorage;
 import com.google.common.io.Files;
 
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
 
 import java.io.ByteArrayOutputStream;
@@ -14,6 +21,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Random;
 import java.util.UUID;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 /**
  * @author Alexey Danilov (danikula@gmail.com).
@@ -82,5 +96,43 @@ public class ProxyCacheTestUtils {
         byte[] result = new byte[capacity];
         random.nextBytes(result);
         return result;
+    }
+
+    public static HttpUrlSource newAngryHttpUrlSource() throws ProxyCacheException {
+        HttpUrlSource source = mock(HttpUrlSource.class);
+        doThrow(new RuntimeException()).when(source).getMime();
+        doThrow(new RuntimeException()).when(source).read(any(byte[].class));
+        doThrow(new RuntimeException()).when(source).open(anyInt());
+        doThrow(new RuntimeException()).when(source).length();
+        doThrow(new RuntimeException()).when(source).getUrl();
+        doThrow(new RuntimeException()).when(source).close();
+        return source;
+    }
+
+    public static HttpUrlSource newNotOpenableHttpUrlSource(String url, SourceInfoStorage sourceInfoStorage) throws ProxyCacheException {
+        HttpUrlSource httpUrlSource = new HttpUrlSource(url, sourceInfoStorage);
+        HttpUrlSource source = spy(httpUrlSource);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                System.out.print("Can't open!!!");
+                throw new RuntimeException();
+            }
+        }).when(source).open(anyInt());
+        return source;
+    }
+
+    public static Source newPhlegmaticSource(byte[] data, final int maxDelayMs) throws ProxyCacheException {
+        Source spySource = spy(new ByteArraySource(data));
+        final Random delayGenerator = new Random(System.currentTimeMillis());
+        doAnswer(new Answer() {
+
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Thread.sleep(delayGenerator.nextInt(maxDelayMs));
+                return null;
+            }
+        }).doCallRealMethod().when(spySource).read(any(byte[].class));
+        return spySource;
     }
 }
