@@ -166,6 +166,19 @@ public class HttpProxyCacheTest {
         assertThat(response.data).isEmpty();
     }
 
+    @Test
+    public void testCacheListenerCalledAtTheEnd() throws Exception {
+        File file = ProxyCacheTestUtils.newCacheFile();
+        File tempFile = ProxyCacheTestUtils.getTempFile(file);
+        HttpProxyCache proxyCache = new HttpProxyCache(new HttpUrlSource(HTTP_DATA_URL), new FileCache(file));
+        CacheListener listener = Mockito.mock(CacheListener.class);
+        proxyCache.registerCacheListener(listener);
+        processRequest(proxyCache, "GET /" + HTTP_DATA_URL + " HTTP/1.1");
+
+        Mockito.verify(listener).onCacheAvailable(tempFile, HTTP_DATA_URL, 100);    // must be called for temp file ...
+        Mockito.verify(listener).onCacheAvailable(file, HTTP_DATA_URL, 100);        // .. and for original file too
+    }
+
     @Test(expected = ProxyCacheException.class)
     public void testTouchSourceForAbsentSourceInfoAndCache() throws Exception {
         SourceInfoStorage sourceInfoStorage = SourceInfoStorageFactory.newEmptySourceInfoStorage();

@@ -134,6 +134,7 @@ class ProxyCache {
                 notifyNewCacheDataAvailable(offset, sourceAvailable);
             }
             tryComplete();
+            onSourceRead();
         } catch (Throwable e) {
             readSourceErrorsCount.incrementAndGet();
             onError(e);
@@ -141,6 +142,12 @@ class ProxyCache {
             closeSource();
             notifyNewCacheDataAvailable(offset, sourceAvailable);
         }
+    }
+
+    private void onSourceRead() {
+        // guaranteed notify listeners after source read and cache completed
+        percentsAvailable = 100;
+        onCachePercentsAvailableChanged(percentsAvailable);
     }
 
     private void tryComplete() throws ProxyCacheException {
