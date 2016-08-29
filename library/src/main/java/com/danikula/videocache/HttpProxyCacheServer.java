@@ -299,7 +299,7 @@ public class HttpProxyCacheServer {
 
     private void closeSocketOutput(Socket socket) {
         try {
-            if (socket.isOutputShutdown()) {
+            if (!socket.isOutputShutdown()) {
                 socket.shutdownOutput();
             }
         } catch (IOException e) {
