@@ -29,7 +29,7 @@ publish {
     userOrg = 'alexeydanilov'
     groupId = 'com.danikula'
     artifactId = 'videocache'
-    publishVersion = '2.6.0'
+    publishVersion = '2.6.1'
     description = 'Cache support for android VideoView'
     website = 'https://github.com/danikula/AndroidVideoCache'
 }
