@@ -2,12 +2,8 @@ package com.danikula.videocache;
 
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 
@@ -19,9 +15,7 @@ import static org.fest.assertions.api.Assertions.fail;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class FileNameGeneratorTest {
+public class FileNameGeneratorTest extends BaseTest {
 
     @Test
     public void testMd5SimpleName() throws Exception {

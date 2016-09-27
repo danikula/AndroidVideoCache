@@ -3,14 +3,10 @@ package com.danikula.videocache;
 import com.danikula.videocache.sourcestorage.SourceInfoStorage;
 import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -33,9 +29,7 @@ import static org.mockito.Matchers.any;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class HttpUrlSourceTest {
+public class HttpUrlSourceTest extends BaseTest {
 
     @Test
     public void testHttpUrlSourceRange() throws Exception {

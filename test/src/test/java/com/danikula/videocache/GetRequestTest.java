@@ -1,11 +1,6 @@
 package com.danikula.videocache;
 
-import com.danikula.videocache.test.BuildConfig;
-
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -16,9 +11,7 @@ import static org.fest.assertions.api.Assertions.fail;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class GetRequestTest {
+public class GetRequestTest extends BaseTest {
 
     @Test
     public void testPartialHttpGet() throws Exception {

@@ -2,16 +2,13 @@ package com.danikula.videocache.file;
 
 import com.danikula.android.garden.io.Files;
 import com.danikula.android.garden.io.IoUtils;
+import com.danikula.videocache.BaseTest;
 import com.danikula.videocache.Cache;
 import com.danikula.videocache.ProxyCacheException;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.util.Arrays;
@@ -27,9 +24,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class FileCacheTest {
+public class FileCacheTest extends BaseTest {
 
     @Test
     public void testWriteReadDiscCache() throws Exception {

@@ -1,6 +1,7 @@
 package com.danikula.videocache.file;
 
-import android.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.concurrent.Executors;
  */
 abstract class LruDiskUsage implements DiskUsage {
 
-    private static final String LOG_TAG = "ProxyCache";
+    private static final Logger LOG = LoggerFactory.getLogger("LruDiskUsage");
     private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
 
     @Override
@@ -43,9 +44,9 @@ abstract class LruDiskUsage implements DiskUsage {
                 if (deleted) {
                     totalCount--;
                     totalSize -= fileSize;
-                    Log.i(LOG_TAG, "Cache file " + file + " is deleted because it exceeds cache limit");
+                    LOG.info("Cache file " + file + " is deleted because it exceeds cache limit");
                 } else {
-                    Log.e(LOG_TAG, "Error deleting file " + file + " for trimming cache");
+                    LOG.error("Error deleting file " + file + " for trimming cache");
                 }
             }
         }

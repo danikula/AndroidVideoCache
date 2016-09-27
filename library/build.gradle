@@ -23,13 +23,14 @@ sourceCompatibility = '1.7'
 
 dependencies {
     compile 'com.google.android:android:1.6_r2'
+    compile 'org.slf4j:slf4j-android:1.7.21'
 }
 
 publish {
     userOrg = 'alexeydanilov'
     groupId = 'com.danikula'
     artifactId = 'videocache'
-    publishVersion = '2.6.1'
+    publishVersion = '2.6.2'
     description = 'Cache support for android VideoView'
     website = 'https://github.com/danikula/AndroidVideoCache'
 }

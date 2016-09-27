@@ -1,10 +1,12 @@
 package com.danikula.videocache;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.danikula.videocache.sourcestorage.SourceInfoStorage;
 import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -15,7 +17,6 @@ import java.net.URL;
 
 import static com.danikula.videocache.Preconditions.checkNotNull;
 import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
-import static com.danikula.videocache.ProxyCacheUtils.LOG_TAG;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -28,6 +29,8 @@ import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
  * @author Alexey Danilov (danikula@gmail.com).
  */
 public class HttpUrlSource implements Source {
+
+    private static final Logger LOG = LoggerFactory.getLogger("HttpUrlSource");
 
     private static final int MAX_REDIRECTS = 5;
     private final SourceInfoStorage sourceInfoStorage;
@@ -108,7 +111,7 @@ public class HttpUrlSource implements Source {
     }
 
     private void fetchContentInfo() throws ProxyCacheException {
-        Log.d(LOG_TAG, "Read content info from " + sourceInfo.url);
+        LOG.debug("Read content info from " + sourceInfo.url);
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
@@ -118,9 +121,9 @@ public class HttpUrlSource implements Source {
             inputStream = urlConnection.getInputStream();
             this.sourceInfo = new SourceInfo(sourceInfo.url, length, mime);
             this.sourceInfoStorage.put(sourceInfo.url, sourceInfo);
-            Log.i(LOG_TAG, "Source info fetched: " + sourceInfo);
+            LOG.debug("Source info fetched: " + sourceInfo);
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Error fetching info from " + sourceInfo.url, e);
+            LOG.error("Error fetching info from " + sourceInfo.url, e);
         } finally {
             ProxyCacheUtils.close(inputStream);
             if (urlConnection != null) {
@@ -135,7 +138,7 @@ public class HttpUrlSource implements Source {
         int redirectCount = 0;
         String url = this.sourceInfo.url;
         do {
-            Log.d(LOG_TAG, "Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
+            LOG.debug("Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
             connection = (HttpURLConnection) new URL(url).openConnection();
             if (offset > 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");

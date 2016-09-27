@@ -7,14 +7,10 @@ import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,9 +36,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class HttpProxyCacheServerTest {
+public class HttpProxyCacheServerTest extends BaseTest {
 
     private File cacheFolder;
 

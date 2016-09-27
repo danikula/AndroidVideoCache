@@ -1,13 +1,10 @@
 package com.danikula.videocache.file;
 
+import com.danikula.videocache.BaseTest;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,9 +18,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class DiskUsageTest {
+public class DiskUsageTest extends BaseTest {
 
     private File cacheFolder;
 

@@ -3,12 +3,8 @@ package com.danikula.videocache;
 import com.danikula.android.garden.io.IoUtils;
 import com.danikula.videocache.file.FileCache;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.util.Arrays;
@@ -28,9 +24,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 /**
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class ProxyCacheTest {
+public class ProxyCacheTest extends BaseTest  {
 
     @Test
     public void testNoCache() throws Exception {
@@ -101,7 +95,6 @@ public class ProxyCacheTest {
         proxyCache.read(readData, 0, dataSize);
         assertThat(readData).isEqualTo(sourceData);
     }
-
 
     @Test
     public void testReadEnd() throws Exception {

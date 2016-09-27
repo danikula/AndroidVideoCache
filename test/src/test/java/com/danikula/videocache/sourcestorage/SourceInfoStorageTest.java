@@ -1,15 +1,12 @@
 package com.danikula.videocache.sourcestorage;
 
+import com.danikula.videocache.BaseTest;
 import com.danikula.videocache.SourceInfo;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
@@ -19,9 +16,7 @@ import static org.fest.assertions.api.Assertions.fail;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class SourceInfoStorageTest {
+public class SourceInfoStorageTest extends BaseTest {
 
     private SourceInfoStorage storage;
 

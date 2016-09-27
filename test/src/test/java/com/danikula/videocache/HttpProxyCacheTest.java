@@ -6,14 +6,10 @@ import com.danikula.videocache.sourcestorage.SourceInfoStorage;
 import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
-import com.danikula.videocache.test.BuildConfig;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,9 +45,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class)
-public class HttpProxyCacheTest {
+public class HttpProxyCacheTest extends BaseTest {
 
     @Test
     public void testProcessRequestNoCache() throws Exception {

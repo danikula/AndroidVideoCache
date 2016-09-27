@@ -36,7 +36,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.danikula:videocache:2.6.1'
+    compile 'com.danikula:videocache:2.6.2'
 }
 ```
 

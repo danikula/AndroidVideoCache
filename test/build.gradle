@@ -23,7 +23,7 @@ android {
 
 dependencies {
     compile project(':library')
-
+    testCompile 'org.slf4j:slf4j-simple:1.7.21'
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.1'
     testCompile 'com.squareup:fest-android:1.0.0'
