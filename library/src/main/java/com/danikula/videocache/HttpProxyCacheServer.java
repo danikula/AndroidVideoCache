@@ -1,6 +1,7 @@
 package com.danikula.videocache;
 
 import android.content.Context;
+import android.net.Uri;
 
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
@@ -84,7 +85,37 @@ public class HttpProxyCacheServer {
         }
     }
 
+    /**
+     * Returns url that wrap original url and should be used for client (MediaPlayer, ExoPlayer, etc).
+     * <p>
+     * If file for this url is fully cached (it means method {@link #isCached(String)} returns {@code true})
+     * then file:// uri to cached file will be returned.
+     * <p>
+     * Calling this method has same effect as calling {@link #getProxyUrl(String, boolean)} with 2nd parameter set to {@code true}.
+     *
+     * @param url a url to file that should be cached.
+     * @return a wrapped by proxy url if file is not fully cached or url pointed to cache file otherwise.
+     */
     public String getProxyUrl(String url) {
+        return getProxyUrl(url, true);
+    }
+
+    /**
+     * Returns url that wrap original url and should be used for client (MediaPlayer, ExoPlayer, etc).
+     * <p>
+     * If parameter {@code allowCachedFileUri} is {@code true} and file for this url is fully cached
+     * (it means method {@link #isCached(String)} returns {@code true}) then file:// uri to cached file will be returned.
+     *
+     * @param url                a url to file that should be cached.
+     * @param allowCachedFileUri {@code true} if allow to return file:// uri if url is fully cached
+     * @return a wrapped by proxy url if file is not fully cached or url pointed to cache file otherwise (if {@code allowCachedFileUri} is {@code true}).
+     */
+    public String getProxyUrl(String url, boolean allowCachedFileUri) {
+        if (allowCachedFileUri && isCached(url)) {
+            File cacheFile = getCacheFile(url);
+            touchFileSafely(cacheFile);
+            return Uri.fromFile(cacheFile).toString();
+        }
         return isAlive() ? appendToProxyUrl(url) : url;
     }
 
@@ -127,10 +158,7 @@ public class HttpProxyCacheServer {
      */
     public boolean isCached(String url) {
         checkNotNull(url, "Url can't be null!");
-        File cacheDir = config.cacheRoot;
-        String fileName = config.fileNameGenerator.generate(url);
-        File cacheFile = new File(cacheDir, fileName);
-        return cacheFile.exists();
+        return getCacheFile(url).exists();
     }
 
     public void shutdown() {
@@ -156,6 +184,20 @@ public class HttpProxyCacheServer {
 
     private String appendToProxyUrl(String url) {
         return String.format(Locale.US, "http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
+    }
+
+    private File getCacheFile(String url) {
+        File cacheDir = config.cacheRoot;
+        String fileName = config.fileNameGenerator.generate(url);
+        return new File(cacheDir, fileName);
+    }
+
+    private void touchFileSafely(File cacheFile) {
+        try {
+            config.diskUsage.touch(cacheFile);
+        } catch (IOException e) {
+            LOG.error("Error touching file " + cacheFile, e);
+        }
     }
 
     private void shutdownClients() {

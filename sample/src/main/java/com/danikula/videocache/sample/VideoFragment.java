@@ -55,12 +55,17 @@ public class VideoFragment extends Fragment implements CacheListener {
         HttpProxyCacheServer proxy = App.getProxy(getActivity());
         boolean fullyCached = proxy.isCached(url);
         setCachedState(fullyCached);
+        if (fullyCached) {
+            progressBar.setSecondaryProgress(100);
+        }
     }
 
     private void startVideo() {
         HttpProxyCacheServer proxy = App.getProxy(getActivity());
         proxy.registerCacheListener(this, url);
-        videoView.setVideoPath(proxy.getProxyUrl(url));
+        String proxyUrl = proxy.getProxyUrl(url);
+        Log.d(LOG_TAG, "Use proxy url " + proxyUrl + " instead of original url " + url);
+        videoView.setVideoPath(proxyUrl);
         videoView.start();
     }
 

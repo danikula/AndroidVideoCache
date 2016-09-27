@@ -21,7 +21,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Random;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -54,9 +57,9 @@ public class ProxyCacheTestUtils {
     }
 
     public static Response readProxyResponse(HttpProxyCacheServer proxy, String url, int offset) throws IOException {
-        String proxyUrl = proxy.getProxyUrl(url);
+        String proxyUrl = proxy.getProxyUrl(url, false);
         if (!proxyUrl.startsWith("http://127.0.0.1")) {
-            throw new IllegalStateException("Url " + url + " is not proxied!");
+            throw new IllegalStateException("Proxy url " + proxyUrl + " is not proxied! Original url is " + url);
         }
         URL proxiedUrl = new URL(proxyUrl);
         HttpURLConnection connection = (HttpURLConnection) proxiedUrl.openConnection();
@@ -134,5 +137,14 @@ public class ProxyCacheTestUtils {
             }
         }).doCallRealMethod().when(spySource).read(any(byte[].class));
         return spySource;
+    }
+
+    public static int getPort(HttpProxyCacheServer server) {
+        String proxyUrl = server.getProxyUrl("test");
+        Pattern pattern = Pattern.compile("http://127.0.0.1:(\\d*)/test");
+        Matcher matcher = pattern.matcher(proxyUrl);
+        assertThat(matcher.find()).isTrue();
+        String portAsString = matcher.group(1);
+        return Integer.parseInt(portAsString);
     }
 }

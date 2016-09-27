@@ -5,9 +5,8 @@ import org.robolectric.RuntimeEnvironment;
 
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import static com.danikula.videocache.support.ProxyCacheTestUtils.getPort;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -53,12 +52,5 @@ public class PingerTest extends BaseTest {
         assertThat(out.toString()).isEqualTo("HTTP/1.1 200 OK\n\nping ok");
     }
 
-    private int getPort(HttpProxyCacheServer server) {
-        String proxyUrl = server.getProxyUrl("test");
-        Pattern pattern = Pattern.compile("http://127.0.0.1:(\\d*)/test");
-        Matcher matcher = pattern.matcher(proxyUrl);
-        assertThat(matcher.find()).isTrue();
-        String portAsString = matcher.group(1);
-        return Integer.parseInt(portAsString);
-    }
+
 }
