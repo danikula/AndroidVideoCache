@@ -1,7 +1,6 @@
 package com.danikula.videocache;
 
 import android.content.Context;
-import android.os.SystemClock;
 
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
@@ -16,26 +15,19 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 import static com.danikula.videocache.Preconditions.checkAllNotNull;
 import static com.danikula.videocache.Preconditions.checkNotNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Simple lightweight proxy server with file caching support that handles HTTP requests.
@@ -59,10 +51,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class HttpProxyCacheServer {
 
     private static final Logger LOG = LoggerFactory.getLogger("HttpProxyCacheServer");
-
     private static final String PROXY_HOST = "127.0.0.1";
-    private static final String PING_REQUEST = "ping";
-    private static final String PING_RESPONSE = "ping ok";
 
     private final Object clientsLock = new Object();
     private final ExecutorService socketProcessor = Executors.newFixedThreadPool(8);
@@ -71,7 +60,7 @@ public class HttpProxyCacheServer {
     private final int port;
     private final Thread waitConnectionThread;
     private final Config config;
-    private boolean pinged;
+    private final Pinger pinger;
 
     public HttpProxyCacheServer(Context context) {
         this(new Builder(context).buildConfig());
@@ -87,65 +76,16 @@ public class HttpProxyCacheServer {
             this.waitConnectionThread = new Thread(new WaitRequestsRunnable(startSignal));
             this.waitConnectionThread.start();
             startSignal.await(); // freeze thread, wait for server starts
-            LOG.info("Proxy cache server started. Ping it...");
-            makeSureServerWorks();
+            this.pinger = new Pinger(PROXY_HOST, port);
+            LOG.info("Proxy cache server started. Is it alive? " + isAlive());
         } catch (IOException | InterruptedException e) {
             socketProcessor.shutdown();
             throw new IllegalStateException("Error starting local proxy server", e);
         }
     }
 
-    private void makeSureServerWorks() {
-        int maxPingAttempts = 3;
-        int delay = 300;
-        int pingAttempts = 0;
-        while (pingAttempts < maxPingAttempts) {
-            try {
-                Future<Boolean> pingFuture = socketProcessor.submit(new PingCallable());
-                this.pinged = pingFuture.get(delay, MILLISECONDS);
-                if (this.pinged) {
-                    return;
-                }
-                SystemClock.sleep(delay);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                LOG.error("Error pinging server [attempt: " + pingAttempts + ", timeout: " + delay + "]. ", e);
-            }
-            pingAttempts++;
-            delay *= 2;
-        }
-        LOG.error("Shutdown server… Error pinging server [attempts: " + pingAttempts + ", max timeout: " + delay / 2 + "]. " +
-                "If you see this message, please, email me danikula@gmail.com");
-        shutdown();
-    }
-
-    private boolean pingServer() throws ProxyCacheException {
-        String pingUrl = appendToProxyUrl(PING_REQUEST);
-        HttpUrlSource source = new HttpUrlSource(pingUrl);
-        try {
-            byte[] expectedResponse = PING_RESPONSE.getBytes();
-            source.open(0);
-            byte[] response = new byte[expectedResponse.length];
-            source.read(response);
-            boolean pingOk = Arrays.equals(expectedResponse, response);
-            LOG.info("Ping response: `" + new String(response) + "`, pinged? " + pingOk);
-            return pingOk;
-        } catch (ProxyCacheException e) {
-            LOG.error("Error reading ping response", e);
-            return false;
-        } finally {
-            source.close();
-        }
-    }
-
     public String getProxyUrl(String url) {
-        if (!pinged) {
-            LOG.error("Proxy server isn't pinged. Caching doesn't work. If you see this message, please, email me danikula@gmail.com");
-        }
-        return pinged ? appendToProxyUrl(url) : url;
-    }
-
-    private String appendToProxyUrl(String url) {
-        return String.format(Locale.US, "http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
+        return isAlive() ? appendToProxyUrl(url) : url;
     }
 
     public void registerCacheListener(CacheListener cacheListener, String url) {
@@ -210,6 +150,14 @@ public class HttpProxyCacheServer {
         }
     }
 
+    private boolean isAlive() {
+        return pinger.ping(3, 70);   // 70+140+280=max~500ms
+    }
+
+    private String appendToProxyUrl(String url) {
+        return String.format(Locale.US, "http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
+    }
+
     private void shutdownClients() {
         synchronized (clientsLock) {
             for (HttpProxyCacheServerClients clients : clientsMap.values()) {
@@ -236,8 +184,8 @@ public class HttpProxyCacheServer {
             GetRequest request = GetRequest.read(socket.getInputStream());
             LOG.debug("Request to cache proxy:" + request);
             String url = ProxyCacheUtils.decode(request.uri);
-            if (PING_REQUEST.equals(url)) {
-                responseToPing(socket);
+            if (pinger.isPingRequest(url)) {
+                pinger.responseToPing(socket);
             } else {
                 HttpProxyCacheServerClients clients = getClients(url);
                 clients.processRequest(request, socket);
@@ -252,12 +200,6 @@ public class HttpProxyCacheServer {
             releaseSocket(socket);
             LOG.debug("Opened connections: " + getClientsCount());
         }
-    }
-
-    private void responseToPing(Socket socket) throws IOException {
-        OutputStream out = socket.getOutputStream();
-        out.write("HTTP/1.1 200 OK\n\n".getBytes());
-        out.write(PING_RESPONSE.getBytes());
     }
 
     private HttpProxyCacheServerClients getClients(String url) throws ProxyCacheException {
@@ -351,14 +293,6 @@ public class HttpProxyCacheServer {
         @Override
         public void run() {
             processSocket(socket);
-        }
-    }
-
-    private class PingCallable implements Callable<Boolean> {
-
-        @Override
-        public Boolean call() throws Exception {
-            return pingServer();
         }
     }
 
