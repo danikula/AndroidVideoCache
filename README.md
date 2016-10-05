@@ -9,6 +9,7 @@
   - [Disk cache limit](#disk-cache-limit)
   - [Listen caching progress](#listen-caching-progress)
   - [Providing names for cached files](#providing-names-for-cached-files)
+  - [Adding custom http headers](#adding-custom-http-headers)
   - [Using exoPlayer](#using-exoplayer)
   - [Sample](#sample)
 - [Known problems](#known-problems)
@@ -135,6 +136,25 @@ public class MyFileNameGenerator implements FileNameGenerator {
 HttpProxyCacheServer proxy = HttpProxyCacheServer.Builder(context)
     .fileNameGenerator(new MyFileNameGenerator())
     .build()
+```
+
+### Adding custom http headers
+You can add custom headers to requests with help of `HeadersInjector`:
+``` java
+public class UserAgentHeadersInjector implements HeaderInjector {
+
+    @Override
+    public Map<String, String> addHeaders(String url) {
+        return Maps.newHashMap("User-Agent", "Cool app v1.1");
+    }
+}
+
+private HttpProxyCacheServer newProxy() {
+    return new HttpProxyCacheServer.Builder(this)
+            .headerInjector(new UserAgentHeadersInjector())
+            .build();
+}
+
 ```
 
 ### Using exoPlayer

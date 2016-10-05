@@ -1,5 +1,6 @@
 package com.danikula.videocache;
 
+import com.danikula.videocache.headers.HeaderInjector;
 import com.danikula.videocache.sourcestorage.SourceInfoStorage;
 import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
@@ -25,6 +26,7 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Alexey Danilov (danikula@gmail.com).
@@ -154,6 +156,16 @@ public class HttpUrlSourceTest extends BaseTest {
         SourceInfoStorage sourceInfoStorage = SourceInfoStorageFactory.newEmptySourceInfoStorage();
         ProxyCacheTestUtils.newNotOpenableHttpUrlSource("", sourceInfoStorage).open(Mockito.anyInt());
         fail("source.open() should throw exception");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testHeaderInjectorNullNotAcceptable() throws Exception {
+        HeaderInjector mockedHeaderInjector = Mockito.mock(HeaderInjector.class);
+        when(mockedHeaderInjector.addHeaders(Mockito.anyString())).thenReturn(null);
+        SourceInfoStorage emptySourceInfoStorage = SourceInfoStorageFactory.newEmptySourceInfoStorage();
+        HttpUrlSource source = new HttpUrlSource(HTTP_DATA_URL_ONE_REDIRECT, emptySourceInfoStorage, mockedHeaderInjector);
+        source.open(0);
+        fail("source.open should throw NPE!");
     }
 
     private void readSource(Source source, byte[] target) throws ProxyCacheException {

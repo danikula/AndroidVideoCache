@@ -6,11 +6,13 @@ import android.util.Pair;
 import com.danikula.android.garden.io.IoUtils;
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
+import com.danikula.videocache.headers.HeaderInjector;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
 
 import java.io.File;
@@ -36,6 +38,8 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.readProxyResponse;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.resetSystemProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Alexey Danilov (danikula@gmail.com).
@@ -358,6 +362,20 @@ public class HttpProxyCacheServerTest extends BaseTest {
         String proxiedUrl = httpProxyCacheServer.getProxyUrl(HTTP_DATA_URL);
         // server can't proxy this url due to it is not alive (can't ping itself), so it returns original url
         assertThat(proxiedUrl).isEqualTo(HTTP_DATA_URL);
+    }
+
+    @Test
+    public void testHeadersInjectorIsInvoked() throws Exception {
+        HeaderInjector mockedHeaderInjector = Mockito.mock(HeaderInjector.class);
+
+        HttpProxyCacheServer proxy = new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
+                .headerInjector(mockedHeaderInjector)
+                .build();
+
+        readProxyResponse(proxy, HTTP_DATA_URL);
+        proxy.shutdown();
+
+        verify(mockedHeaderInjector, times(2)).addHeaders(HTTP_DATA_URL);   // content info & fetch data requests
     }
 
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
