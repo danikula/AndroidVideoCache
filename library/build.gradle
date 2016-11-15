@@ -7,9 +7,26 @@ buildscript {
     }
 }
 
+apply plugin: 'com.android.library'
 apply plugin: 'idea'
-apply plugin: 'java'
 apply plugin: 'bintray-release'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '22.0.1'
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 23
+        versionCode 19
+        versionName '2.6.3'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
 
 idea {
     module {
@@ -18,11 +35,7 @@ idea {
     }
 }
 
-targetCompatibility = '1.7'
-sourceCompatibility = '1.7'
-
 dependencies {
-    compile 'com.google.android:android:1.6_r2'
     compile 'org.slf4j:slf4j-android:1.7.21'
 }
 
