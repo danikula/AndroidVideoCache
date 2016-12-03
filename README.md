@@ -32,11 +32,8 @@ Note `AndroidVideoCache` works only with **direct urls** to media file, it  [**d
 ## Get started
 Just add dependency (`AndroidVideoCache` is available in jcenter):
 ```
-repositories {
-    jcenter()
-}
 dependencies {
-    compile 'com.danikula:videocache:2.6.3'
+    compile 'com.danikula:videocache:2.6.4'
 }
 ```
 
