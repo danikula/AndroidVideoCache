@@ -36,16 +36,16 @@ import static com.danikula.videocache.Preconditions.checkNotNull;
  * <pre><code>
  * public onCreate(Bundle state) {
  *      super.onCreate(state);
- * <p/>
+ *
  *      HttpProxyCacheServer proxy = getProxy();
  *      String proxyUrl = proxy.getProxyUrl(VIDEO_URL);
  *      videoView.setVideoPath(proxyUrl);
  * }
- * <p/>
+ *
  * private HttpProxyCacheServer getProxy() {
  * // should return single instance of HttpProxyCacheServer shared for whole app.
  * }
- * <code/></pre>
+ * </code></pre>
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
@@ -291,7 +291,7 @@ public class HttpProxyCacheServer {
                 socket.shutdownOutput();
             }
         } catch (IOException e) {
-            onError(new ProxyCacheException("Error closing socket output stream", e));
+            LOG.warn("Failed to close socket on proxy side: {}. It seems client have already closed connection.", e.getMessage());
         }
     }
 
@@ -359,11 +359,11 @@ public class HttpProxyCacheServer {
 
         /**
          * Overrides default cache folder to be used for caching files.
-         * <p/>
+         * <p>
          * By default AndroidVideoCache uses
          * '/Android/data/[app_package_name]/cache/video-cache/' if card is mounted and app has appropriate permission
          * or 'video-cache' subdirectory in default application's cache directory otherwise.
-         * <p/>
+         * </p>
          * <b>Note</b> directory must be used <b>only</b> for AndroidVideoCache files.
          *
          * @param file a cache directory, can't be null.
@@ -387,9 +387,10 @@ public class HttpProxyCacheServer {
 
         /**
          * Sets max cache size in bytes.
+         * <p>
          * All files that exceeds limit will be deleted using LRU strategy.
          * Default value is 512 Mb.
-         * <p/>
+         * </p>
          * Note this method overrides result of calling {@link #maxCacheFilesCount(int)}
          *
          * @param maxSize max cache size in bytes.
@@ -403,7 +404,6 @@ public class HttpProxyCacheServer {
         /**
          * Sets max cache files count.
          * All files that exceeds limit will be deleted using LRU strategy.
-         * <p/>
          * Note this method overrides result of calling {@link #maxCacheSize(long)}
          *
          * @param count max cache files count.
