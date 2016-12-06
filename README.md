@@ -8,6 +8,7 @@
 - [Recipes](#recipes)
   - [Disk cache limit](#disk-cache-limit)
   - [Listen caching progress](#listen-caching-progress)
+  - [Providing names for cached files](#providing-names-for-cached-files)
   - [Sample](#sample)
 - [Known problems](#known-problems)
 - [Whats new](#whats-new)
@@ -104,6 +105,26 @@ Use `HttpProxyCacheServer.registerCacheListener(CacheListener listener)` method 
 Use `HttpProxyCacheServer.isCached(String url)` method to check was url's content fully cached to file or not.
 
 See `sample` app for more details.
+
+### Providing names for cached files
+By default `AndroidVideoCache` uses MD5 of video url as file name. But in some cases url is not stable and it can contain some generated parts (e.g. session token). In this case caching mechanism will be broken. To fix it you have to provide own `FileNameGenerator`:
+``` java
+public class MyFileNameGenerator implements FileNameGenerator {
+
+    // Urls contain mutable parts (parameter 'sessionToken') and stable video's id (parameter 'videoId').
+    // e. g. http://example.com?videoId=abcqaz&sessionToken=xyz987
+    public String generate(String url) {
+        Uri uri = Uri.parse(url);
+        String videoId = uri.getQueryParameter("videoId");
+        return videoId + ".mp4";
+    }
+}
+
+...
+HttpProxyCacheServer proxy = HttpProxyCacheServer.Builder(context)
+    .fileNameGenerator(new MyFileNameGenerator())
+    .build()
+```
 
 ### Sample
 See `sample` app.
