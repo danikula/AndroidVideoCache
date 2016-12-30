@@ -99,6 +99,16 @@ private HttpProxyCacheServer newProxy() {
 }
 ```
 
+or even implement your own `DiskUsage` strategy:
+```java
+private HttpProxyCacheServer newProxy() {
+    return new HttpProxyCacheServer.Builder(this)
+            .diskUsage(new MyCoolDiskUsageStrategy())
+            .build();
+}
+```
+
+
 ### Listen caching progress
 Use `HttpProxyCacheServer.registerCacheListener(CacheListener listener)` method to set listener with callback `onCacheAvailable(File cacheFile, String url, int percentsAvailable)` to be aware of caching progress. Do not forget to to unsubscribe listener with help of `HttpProxyCacheServer.unregisterCacheListener(CacheListener listener)` method to avoid memory leaks.
 

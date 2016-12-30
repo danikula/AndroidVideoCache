@@ -415,6 +415,16 @@ public class HttpProxyCacheServer {
         }
 
         /**
+         * Set custom DiskUsage logic for handling when to keep or clean cache.
+         *
+         * @param diskUsage a disk usage strategy, cant be {@code null}.
+         */
+        public Builder diskUsage(DiskUsage diskUsage) {
+            this.diskUsage = checkNotNull(diskUsage);
+            return this;
+        }
+
+        /**
          * Builds new instance of {@link HttpProxyCacheServer}.
          *
          * @return proxy cache. Only single instance should be used across whole app.

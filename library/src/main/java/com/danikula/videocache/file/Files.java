@@ -1,11 +1,15 @@
 package com.danikula.videocache.file;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +19,8 @@ import java.util.List;
  * @author Alexey Danilov (danikula@gmail.com).
  */
 class Files {
+
+    private static final Logger LOG = LoggerFactory.getLogger("Files");
 
     static void makeDir(File directory) throws IOException {
         if (directory.exists()) {
@@ -46,7 +52,8 @@ class Files {
             if (!modified) {
                 modify(file);
                 if (file.lastModified() < now) {
-                    throw new IOException("Error set last modified date to " + file);
+                    // NOTE: apparently this is a known issue (see: http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified)
+                    LOG.warn("Last modified date {} is not set for file {}", new Date(file.lastModified()), file.getAbsolutePath());
                 }
             }
         }

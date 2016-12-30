@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  *
  * @author Alexey Danilov (danikula@gmail.com).
  */
-abstract class LruDiskUsage implements DiskUsage {
+public abstract class LruDiskUsage implements DiskUsage {
 
     private static final Logger LOG = LoggerFactory.getLogger("LruDiskUsage");
     private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
