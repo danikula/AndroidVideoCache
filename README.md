@@ -154,7 +154,7 @@ If it's a feature that you think would need to be discussed please open an issue
 
 ## License
 
-    Copyright 2014-2016 Alexey Danilov
+    Copyright 2014-2017 Alexey Danilov
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
