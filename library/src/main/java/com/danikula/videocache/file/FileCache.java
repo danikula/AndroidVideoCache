@@ -79,6 +79,7 @@ public class FileCache implements Cache {
         try {
             dataFile.close();
             diskUsage.touch(file);
+            diskUsage.trim(file.getParentFile());
         } catch (IOException e) {
             throw new ProxyCacheException("Error closing file " + file, e);
         }

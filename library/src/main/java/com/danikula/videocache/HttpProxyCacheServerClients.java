@@ -32,7 +32,7 @@ final class HttpProxyCacheServerClients {
     public HttpProxyCacheServerClients(String url, Config config) {
         this.url = checkNotNull(url);
         this.config = checkNotNull(config);
-        this.uiCacheListener = new UiListenerHandler(url, listeners);
+        this.uiCacheListener = new UiListenerHandler(url, listeners,config);
     }
 
     public void processRequest(GetRequest request, Socket socket) throws ProxyCacheException, IOException {
@@ -90,17 +90,25 @@ final class HttpProxyCacheServerClients {
 
         private final String url;
         private final List<CacheListener> listeners;
+        private final Config config;
 
-        public UiListenerHandler(String url, List<CacheListener> listeners) {
+        public UiListenerHandler(String url, List<CacheListener> listeners, Config config) {
             super(Looper.getMainLooper());
             this.url = url;
             this.listeners = listeners;
+            this.config=config;
         }
 
         @Override
         public void onCacheAvailable(File file, String url, int percentsAvailable) {
             Message message = obtainMessage();
             message.arg1 = percentsAvailable;
+
+            //if the file is fully cached, trim cache.
+            if(percentsAvailable==100){
+                config.diskUsage.trim(file.getParentFile());
+            }
+
             message.obj = file;
             sendMessage(message);
         }
