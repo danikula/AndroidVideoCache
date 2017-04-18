@@ -6,7 +6,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '22.0.1'
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId 'com.danikula.proxycache.test'
@@ -21,11 +21,18 @@ android {
     }
 }
 
+// temporary workaround for Robolectric issue https://github.com/robolectric/robolectric/issues/2647
+android.applicationVariants.all { variant ->
+    def productFlavor = variant.productFlavors[0] != null ? "${variant.productFlavors[0].name.capitalize()}" : ""
+    def buildType = "${variant.buildType.name.capitalize()}"
+    tasks["compile${productFlavor}${buildType}UnitTestSources"].dependsOn(tasks["merge${productFlavor}${buildType}Assets"])
+}
+
 dependencies {
     compile project(':library')
     testCompile 'org.slf4j:slf4j-simple:1.7.21'
     testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.1'
+    testCompile 'org.robolectric:robolectric:3.3.2'
     testCompile 'com.squareup:fest-android:1.0.0'
     testCompile 'com.google.guava:guava-jdk5:17.0'
     testCompile('com.danikula:android-garden:2.1.4') {
