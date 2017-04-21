@@ -1,7 +1,6 @@
 package com.danikula.videocache.file;
 
 import com.danikula.android.garden.io.Files;
-import com.danikula.android.garden.io.IoUtils;
 import com.danikula.videocache.BaseTest;
 import com.danikula.videocache.Cache;
 import com.danikula.videocache.ProxyCacheException;
@@ -11,6 +10,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import static com.danikula.videocache.support.ProxyCacheTestUtils.ASSETS_DATA_NAME;
@@ -19,6 +19,7 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.getFileContent
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getTempFile;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.newCacheFile;
+import static com.google.common.io.Files.write;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
@@ -95,7 +96,8 @@ public class FileCacheTest extends BaseTest {
     public void testIsFileCacheCompleted() throws Exception {
         File file = newCacheFile();
         File partialFile = new File(file.getParentFile(), file.getName() + ".download");
-        IoUtils.saveToFile(loadAssetFile(ASSETS_DATA_NAME), partialFile);
+        write(loadAssetFile(ASSETS_DATA_NAME), partialFile);
+        write(loadAssetFile(ASSETS_DATA_NAME), partialFile);
         Cache fileCache = new FileCache(partialFile);
 
         assertThat(file.exists()).isFalse();
@@ -114,7 +116,7 @@ public class FileCacheTest extends BaseTest {
     @Test(expected = ProxyCacheException.class)
     public void testErrorWritingCompletedCache() throws Exception {
         File file = newCacheFile();
-        IoUtils.saveToFile(loadAssetFile(ASSETS_DATA_NAME), file);
+        write(loadAssetFile(ASSETS_DATA_NAME), file);
         FileCache fileCache = new FileCache(file);
         fileCache.append(generate(100), 20);
         Assert.fail();
@@ -124,7 +126,7 @@ public class FileCacheTest extends BaseTest {
     public void testErrorWritingAfterCompletion() throws Exception {
         File file = newCacheFile();
         File partialFile = new File(file.getParentFile(), file.getName() + ".download");
-        IoUtils.saveToFile(loadAssetFile(ASSETS_DATA_NAME), partialFile);
+        write(loadAssetFile(ASSETS_DATA_NAME), partialFile);
         FileCache fileCache = new FileCache(partialFile);
         fileCache.complete();
         fileCache.append(generate(100), 20);
@@ -139,5 +141,46 @@ public class FileCacheTest extends BaseTest {
         Files.delete(file);
         fileCache.available();
         Assert.fail();
+    }
+
+    @Test
+    public void testTrimAfterCompletionForTotalCountLru() throws Exception {
+        File cacheDir = newCacheFile();
+        DiskUsage diskUsage = new TotalCountLruDiskUsage(2);
+        byte[] data = loadAssetFile(ASSETS_DATA_NAME);
+        saveAndCompleteCache(diskUsage, data,
+                new File(cacheDir, "0.dat"),
+                new File(cacheDir, "1.dat"),
+                new File(cacheDir, "2.dat")
+        );
+        waitForAsyncTrimming();
+        assertThat(new File(cacheDir, "0.dat")).doesNotExist();
+    }
+
+    @Test
+    public void testTrimAfterCompletionForTotalSizeLru() throws Exception {
+        File cacheDir = newCacheFile();
+        byte[] data = loadAssetFile(ASSETS_DATA_NAME);
+        DiskUsage diskUsage = new TotalSizeLruDiskUsage(data.length*3-1);
+        saveAndCompleteCache(diskUsage, data,
+                new File(cacheDir, "0.dat"),
+                new File(cacheDir, "1.dat"),
+                new File(cacheDir, "2.dat")
+        );
+        waitForAsyncTrimming();
+        assertThat(new File(cacheDir, "0.dat")).doesNotExist();
+    }
+
+    private void saveAndCompleteCache(DiskUsage diskUsage, byte[] data, File... files) throws ProxyCacheException, IOException {
+        for (File file : files) {
+            FileCache fileCache = new FileCache(file, diskUsage);
+            fileCache.append(data, data.length);
+            fileCache.complete();
+            assertThat(file).exists();
+        }
+    }
+
+    private void waitForAsyncTrimming() throws InterruptedException {
+        Thread.sleep(500);
     }
 }

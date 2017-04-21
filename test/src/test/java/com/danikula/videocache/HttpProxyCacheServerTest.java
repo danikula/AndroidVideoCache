@@ -296,6 +296,48 @@ public class HttpProxyCacheServerTest extends BaseTest {
         proxy.shutdown();
     }
 
+    @Test
+    public void testTrimFileCacheForTotalCountLru() throws Exception {
+        FileNameGenerator fileNameGenerator = new Md5FileNameGenerator();
+        HttpProxyCacheServer proxy = new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
+                .cacheDirectory(cacheFolder)
+                .fileNameGenerator(fileNameGenerator)
+                .maxCacheFilesCount(2)
+                .build();
+        readProxyResponse(proxy, proxy.getProxyUrl(HTTP_DATA_URL), 0);
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL))).exists();
+
+        readProxyResponse(proxy, proxy.getProxyUrl(HTTP_DATA_URL_ONE_REDIRECT), 0);
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL_ONE_REDIRECT))).exists();
+
+        readProxyResponse(proxy, proxy.getProxyUrl(HTTP_DATA_URL_3_REDIRECTS), 0);
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL_3_REDIRECTS))).exists();
+
+        waitForAsyncTrimming();
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL))).doesNotExist();
+    }
+
+    @Test
+    public void testTrimFileCacheForTotalSizeLru() throws Exception {
+        FileNameGenerator fileNameGenerator = new Md5FileNameGenerator();
+        HttpProxyCacheServer proxy = new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
+                .cacheDirectory(cacheFolder)
+                .fileNameGenerator(fileNameGenerator)
+                .maxCacheSize(HTTP_DATA_SIZE * 3 - 1)
+                .build();
+        readProxyResponse(proxy, proxy.getProxyUrl(HTTP_DATA_URL), 0);
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL))).exists();
+
+        readProxyResponse(proxy, proxy.getProxyUrl(HTTP_DATA_URL_ONE_REDIRECT), 0);
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL_ONE_REDIRECT))).exists();
+
+        readProxyResponse(proxy, proxy.getProxyUrl(HTTP_DATA_URL_3_REDIRECTS), 0);
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL_3_REDIRECTS))).exists();
+
+        waitForAsyncTrimming();
+        assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL))).doesNotExist();
+    }
+
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
         File file = file(cacheFolder, url);
         HttpProxyCacheServer proxy = newProxy(cacheFolder);
@@ -320,5 +362,9 @@ public class HttpProxyCacheServerTest extends BaseTest {
         return new HttpProxyCacheServer.Builder(RuntimeEnvironment.application)
                 .cacheDirectory(cacheDir)
                 .build();
+    }
+
+    private void waitForAsyncTrimming() throws InterruptedException {
+        Thread.sleep(500);
     }
 }
