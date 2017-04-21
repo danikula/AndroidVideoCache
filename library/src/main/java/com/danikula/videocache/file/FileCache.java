@@ -100,6 +100,7 @@ public class FileCache implements Cache {
         file = completedFile;
         try {
             dataFile = new RandomAccessFile(file, "r");
+            diskUsage.touch(file);
         } catch (IOException e) {
             throw new ProxyCacheException("Error opening " + file + " as disc cache", e);
         }

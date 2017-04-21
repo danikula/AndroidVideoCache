@@ -365,6 +365,6 @@ public class HttpProxyCacheServerTest extends BaseTest {
     }
 
     private void waitForAsyncTrimming() throws InterruptedException {
-        Thread.sleep(500);
+        Thread.sleep(100);
     }
 }

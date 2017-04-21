@@ -161,14 +161,15 @@ public class FileCacheTest extends BaseTest {
     public void testTrimAfterCompletionForTotalSizeLru() throws Exception {
         File cacheDir = newCacheFile();
         byte[] data = loadAssetFile(ASSETS_DATA_NAME);
-        DiskUsage diskUsage = new TotalSizeLruDiskUsage(data.length*3-1);
+        DiskUsage diskUsage = new TotalSizeLruDiskUsage(data.length * 3 - 1);
         saveAndCompleteCache(diskUsage, data,
                 new File(cacheDir, "0.dat"),
                 new File(cacheDir, "1.dat"),
                 new File(cacheDir, "2.dat")
         );
         waitForAsyncTrimming();
-        assertThat(new File(cacheDir, "0.dat")).doesNotExist();
+        File deletedFile = new File(cacheDir, "0.dat");
+        assertThat(deletedFile).doesNotExist();
     }
 
     private void saveAndCompleteCache(DiskUsage diskUsage, byte[] data, File... files) throws ProxyCacheException, IOException {
@@ -181,6 +182,6 @@ public class FileCacheTest extends BaseTest {
     }
 
     private void waitForAsyncTrimming() throws InterruptedException {
-        Thread.sleep(500);
+        Thread.sleep(100);
     }
 }
