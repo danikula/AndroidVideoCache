@@ -8,6 +8,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Locale;
 
 import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
 
@@ -65,9 +66,9 @@ class HttpProxyCache extends ProxyCache {
         return new StringBuilder()
                 .append(request.partial ? "HTTP/1.1 206 PARTIAL CONTENT\n" : "HTTP/1.1 200 OK\n")
                 .append("Accept-Ranges: bytes\n")
-                .append(lengthKnown ? String.format("Content-Length: %d\n", contentLength) : "")
-                .append(addRange ? String.format("Content-Range: bytes %d-%d/%d\n", request.rangeOffset, length - 1, length) : "")
-                .append(mimeKnown ? String.format("Content-Type: %s\n", mime) : "")
+                .append(lengthKnown ? format("Content-Length: %d\n", contentLength) : "")
+                .append(addRange ? format("Content-Range: bytes %d-%d/%d\n", request.rangeOffset, length - 1, length) : "")
+                .append(mimeKnown ? format("Content-Type: %s\n", mime) : "")
                 .append("\n") // headers end
                 .toString();
     }
@@ -96,6 +97,10 @@ class HttpProxyCache extends ProxyCache {
         } finally {
             newSourceNoCache.close();
         }
+    }
+
+    private String format(String pattern, Object... args) {
+        return String.format(Locale.US, pattern, args);
     }
 
     @Override
