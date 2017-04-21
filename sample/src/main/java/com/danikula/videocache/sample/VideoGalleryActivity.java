@@ -1,6 +1,5 @@
 package com.danikula.videocache.sample;
 
-import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -27,17 +26,14 @@ public class VideoGalleryActivity extends FragmentActivity {
 
     private static final class ViewsPagerAdapter extends FragmentStatePagerAdapter {
 
-        private final Context context;
-
         public ViewsPagerAdapter(FragmentActivity activity) {
             super(activity.getSupportFragmentManager());
-            this.context = activity;
         }
 
         @Override
         public Fragment getItem(int position) {
             Video video = Video.values()[position];
-            return GalleryVideoFragment.build(context, video);
+            return GalleryVideoFragment.build(video.url);
         }
 
         @Override

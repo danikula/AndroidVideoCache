@@ -23,7 +23,7 @@ public class SharedCacheActivity extends FragmentActivity {
     private void addVideoFragment(Video video, int containerViewId) {
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(containerViewId, VideoFragment.build(this, video))
+                .add(containerViewId, VideoFragment.build(video.url))
                 .commit();
     }
 }

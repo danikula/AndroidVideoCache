@@ -1,9 +1,5 @@
 package com.danikula.videocache.sample;
 
-import android.content.Context;
-
-import java.io.File;
-
 public enum Video {
 
     ORANGE_1(Config.ROOT + "orange1.mp4"),
@@ -16,10 +12,6 @@ public enum Video {
 
     Video(String url) {
         this.url = url;
-    }
-
-    public File getCacheFile(Context context) {
-        return new File(context.getExternalCacheDir(), name());
     }
 
     private class Config {

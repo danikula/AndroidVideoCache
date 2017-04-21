@@ -49,7 +49,8 @@ public class MenuActivity extends FragmentActivity {
     @Click(R.id.cleanCacheButton)
     void onClearCacheButtonClick() {
         try {
-            Utils.cleanDirectory(getExternalCacheDir());
+
+            Utils.cleanVideoCacheDir(this);
         } catch (IOException e) {
             Log.e(null, "Error cleaning cache", e);
             Toast.makeText(this, "Error cleaning cache", Toast.LENGTH_LONG).show();

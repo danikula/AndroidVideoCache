@@ -1,6 +1,5 @@
 package com.danikula.videocache.sample;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -26,7 +25,6 @@ public class VideoFragment extends Fragment implements CacheListener {
     private static final String LOG_TAG = "VideoFragment";
 
     @FragmentArg String url;
-    @FragmentArg String cachePath;
 
     @ViewById ImageView cacheStatusImageView;
     @ViewById VideoView videoView;
@@ -34,14 +32,9 @@ public class VideoFragment extends Fragment implements CacheListener {
 
     private final VideoProgressUpdater updater = new VideoProgressUpdater();
 
-    public static Fragment build(Context context, Video video) {
-        return build(video.url, video.getCacheFile(context).getAbsolutePath());
-    }
-
-    public static Fragment build(String url, String cachePath) {
+    public static Fragment build(String url) {
         return VideoFragment_.builder()
                 .url(url)
-                .cachePath(cachePath)
                 .build();
     }
 

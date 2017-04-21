@@ -1,5 +1,7 @@
 package com.danikula.videocache.sample;
 
+import android.content.Context;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -10,7 +12,16 @@ import java.io.IOException;
  */
 public class Utils {
 
-    public static void cleanDirectory(File file) throws IOException {
+    public static File getVideoCacheDir(Context context) {
+        return new File(context.getExternalCacheDir(), "video-cache");
+    }
+
+    public static void cleanVideoCacheDir(Context context) throws IOException {
+        File videoCacheDir = getVideoCacheDir(context);
+        cleanDirectory(videoCacheDir);
+    }
+
+    private static void cleanDirectory(File file) throws IOException {
         if (!file.exists()) {
             return;
         }

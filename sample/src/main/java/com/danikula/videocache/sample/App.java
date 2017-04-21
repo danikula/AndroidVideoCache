@@ -18,6 +18,8 @@ public class App extends Application {
     }
 
     private HttpProxyCacheServer newProxy() {
-        return new HttpProxyCacheServer(this);
+        return new HttpProxyCacheServer.Builder(this)
+                .cacheDirectory(Utils.getVideoCacheDir(this))
+                .build();
     }
 }

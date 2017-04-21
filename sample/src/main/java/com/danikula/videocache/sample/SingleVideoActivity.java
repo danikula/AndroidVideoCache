@@ -15,7 +15,7 @@ public class SingleVideoActivity extends FragmentActivity {
         if (state == null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.containerView, VideoFragment.build(this, Video.ORANGE_1))
+                    .add(R.id.containerView, VideoFragment.build(Video.ORANGE_1.url))
                     .commit();
         }
     }
