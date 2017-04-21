@@ -33,7 +33,7 @@ public class ByteArrayCache implements Cache {
     }
 
     @Override
-    public int available() throws ProxyCacheException {
+    public long available() throws ProxyCacheException {
         return data.length;
     }
 

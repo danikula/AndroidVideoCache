@@ -55,7 +55,7 @@ public class HttpUrlSource implements Source {
     }
 
     @Override
-    public synchronized int length() throws ProxyCacheException {
+    public synchronized long length() throws ProxyCacheException {
         if (sourceInfo.length == Integer.MIN_VALUE) {
             fetchContentInfo();
         }
@@ -63,12 +63,12 @@ public class HttpUrlSource implements Source {
     }
 
     @Override
-    public void open(int offset) throws ProxyCacheException {
+    public void open(long offset) throws ProxyCacheException {
         try {
             connection = openConnection(offset, -1);
             String mime = connection.getContentType();
             inputStream = new BufferedInputStream(connection.getInputStream(), DEFAULT_BUFFER_SIZE);
-            int length = readSourceAvailableBytes(connection, offset, connection.getResponseCode());
+            long length = readSourceAvailableBytes(connection, offset, connection.getResponseCode());
             this.sourceInfo = new SourceInfo(sourceInfo.url, length, mime);
             this.sourceInfoStorage.put(sourceInfo.url, sourceInfo);
         } catch (IOException e) {
@@ -76,10 +76,15 @@ public class HttpUrlSource implements Source {
         }
     }
 
-    private int readSourceAvailableBytes(HttpURLConnection connection, int offset, int responseCode) throws IOException {
-        int contentLength = connection.getContentLength();
+    private long readSourceAvailableBytes(HttpURLConnection connection, long offset, int responseCode) throws IOException {
+        long contentLength = getContentLength(connection);
         return responseCode == HTTP_OK ? contentLength
                 : responseCode == HTTP_PARTIAL ? contentLength + offset : sourceInfo.length;
+    }
+
+    private long getContentLength(HttpURLConnection connection) {
+        String contentLengthValue = connection.getHeaderField("Content-Length");
+        return contentLengthValue == null ? -1 : Long.parseLong(contentLengthValue);
     }
 
     @Override
@@ -116,7 +121,7 @@ public class HttpUrlSource implements Source {
         InputStream inputStream = null;
         try {
             urlConnection = openConnection(0, 10000);
-            int length = urlConnection.getContentLength();
+            long length = getContentLength(urlConnection);
             String mime = urlConnection.getContentType();
             inputStream = urlConnection.getInputStream();
             this.sourceInfo = new SourceInfo(sourceInfo.url, length, mime);
@@ -132,7 +137,7 @@ public class HttpUrlSource implements Source {
         }
     }
 
-    private HttpURLConnection openConnection(int offset, int timeout) throws IOException, ProxyCacheException {
+    private HttpURLConnection openConnection(long offset, int timeout) throws IOException, ProxyCacheException {
         HttpURLConnection connection;
         boolean redirected;
         int redirectCount = 0;

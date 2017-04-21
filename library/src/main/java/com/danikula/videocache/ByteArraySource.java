@@ -22,12 +22,12 @@ public class ByteArraySource implements Source {
     }
 
     @Override
-    public int length() throws ProxyCacheException {
+    public long length() throws ProxyCacheException {
         return data.length;
     }
 
     @Override
-    public void open(int offset) throws ProxyCacheException {
+    public void open(long offset) throws ProxyCacheException {
         arrayInputStream = new ByteArrayInputStream(data);
         arrayInputStream.skip(offset);
     }

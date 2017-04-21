@@ -83,7 +83,7 @@ class DatabaseSourceInfoStorage extends SQLiteOpenHelper implements SourceInfoSt
     private SourceInfo convert(Cursor cursor) {
         return new SourceInfo(
                 cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_URL)),
-                cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LENGTH)),
+                cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_LENGTH)),
                 cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MIME))
         );
     }

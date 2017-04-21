@@ -103,7 +103,7 @@ class ProxyCache {
 
     protected void onCacheAvailable(long cacheAvailable, long sourceLength) {
         boolean zeroLengthSource = sourceLength == 0;
-        int percents = zeroLengthSource ? 100 : (int) (cacheAvailable * 100 / sourceLength);
+        int percents = zeroLengthSource ? 100 : (int) (cacheAvailable / sourceLength * 100);
         boolean percentsChanged = percents != percentsAvailable;
         boolean sourceLengthKnown = sourceLength >= 0;
         if (sourceLengthKnown && percentsChanged) {
@@ -116,8 +116,8 @@ class ProxyCache {
     }
 
     private void readSource() {
-        int sourceAvailable = -1;
-        int offset = 0;
+        long sourceAvailable = -1;
+        long offset = 0;
         try {
             offset = cache.available();
             source.open(offset);

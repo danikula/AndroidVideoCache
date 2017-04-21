@@ -70,7 +70,7 @@ public class HttpUrlSourceTest extends BaseTest {
     public void testFetchInfoWithRedirect() throws Exception {
         HttpUrlSource source = new HttpUrlSource(HTTP_DATA_URL_ONE_REDIRECT);
         source.open(0);
-        int available = source.length();
+        long available = source.length();
         String mime = source.getMime();
         source.close();
 

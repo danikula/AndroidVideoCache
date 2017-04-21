@@ -86,7 +86,7 @@ public class FileCacheTest extends BaseTest {
         fileCache.read(readData, firstPortionLength, secondPortionLength);
         assertThat(readData).isEqualTo(wroteSecondPortion);
 
-        readData = new byte[fileCache.available()];
+        readData = new byte[(int)fileCache.available()];
         fileCache.read(readData, 0, readData.length);
         byte[] fileContent = getFileContent(getTempFile(file));
         assertThat(readData).isEqualTo(fileContent);
