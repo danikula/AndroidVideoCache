@@ -140,7 +140,8 @@ HttpProxyCacheServer proxy = HttpProxyCacheServer.Builder(context)
 See `sample` app.
 
 ## Known problems
-`AndroidVideoCache` [doesn't work](https://github.com/danikula/AndroidVideoCache/issues/28) if wifi or mobile internet connection uses proxy.
+- `AndroidVideoCache` [doesn't work](https://github.com/danikula/AndroidVideoCache/issues/28) if wifi or mobile internet connection uses proxy.
+- In some cases clients [can't connect](https://github.com/danikula/AndroidVideoCache/issues/134) to local proxy server ('Error pinging server' error). May be it is result of previous error. Note in this case video will be played, but without caching.
 
 ## Whats new
 See Release Notes [here](https://github.com/danikula/AndroidVideoCache/releases)

@@ -5,8 +5,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Proxy;
+import java.net.ProxySelector;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -61,11 +66,21 @@ class Pinger {
             attempts++;
             timeout *= 2;
         }
-        String error = String.format("Error pinging server (attempts: %d, max timeout: %d). " +
-                "If you see this message, please, email me danikula@gmail.com " +
-                "or create issue here https://github.com/danikula/AndroidVideoCache/issues", attempts, timeout / 2);
+        String error = String.format(Locale.US, "Error pinging server (attempts: %d, max timeout: %d). " +
+                        "If you see this message, please, report at https://github.com/danikula/AndroidVideoCache/issues/134. " +
+                        "Default proxies are: %s"
+                , attempts, timeout / 2, getDefaultProxies());
         LOG.error(error, new ProxyCacheException(error));
         return false;
+    }
+
+    private List<Proxy> getDefaultProxies() {
+        ProxySelector proxySelector = ProxySelector.getDefault();
+        try {
+            return proxySelector.select(new URI("https://github.com"));
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     boolean isPingRequest(String request) {
