@@ -103,7 +103,7 @@ class ProxyCache {
 
     protected void onCacheAvailable(long cacheAvailable, long sourceLength) {
         boolean zeroLengthSource = sourceLength == 0;
-        int percents = zeroLengthSource ? 100 : (int) (cacheAvailable / sourceLength * 100);
+        int percents = zeroLengthSource ? 100 : (int) ((float) cacheAvailable / sourceLength * 100);
         boolean percentsChanged = percents != percentsAvailable;
         boolean sourceLengthKnown = sourceLength >= 0;
         if (sourceLengthKnown && percentsChanged) {
