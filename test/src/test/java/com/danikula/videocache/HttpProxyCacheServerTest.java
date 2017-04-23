@@ -9,8 +9,6 @@ import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
 
-import junit.framework.Assert;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
@@ -33,7 +31,6 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_ONE_REDIRECT;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getFileContent;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getPort;
-import static com.danikula.videocache.support.ProxyCacheTestUtils.getPortWithoutPing;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.installExternalSystemProxy;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.readProxyResponse;
@@ -352,15 +349,15 @@ public class HttpProxyCacheServerTest extends BaseTest {
         assertThat(response.second.data).isEqualTo(loadAssetFile(ASSETS_DATA_NAME));
     }
 
-    @Test(expected = IOException.class) // https://github.com/danikula/AndroidVideoCache/issues/28
+    @Test // https://github.com/danikula/AndroidVideoCache/issues/28
     public void testDoesNotWorkWithoutCustomProxySelector() throws Exception {
         HttpProxyCacheServer httpProxyCacheServer = new HttpProxyCacheServer(RuntimeEnvironment.application);
         // IgnoreHostProxySelector is set in HttpProxyCacheServer constructor. So let reset it by custom.
         installExternalSystemProxy();
 
-        String proxiedUrl = "http://127.0.0.1:" + getPortWithoutPing(httpProxyCacheServer) + "/" + HTTP_DATA_URL;
-        readProxyResponse(httpProxyCacheServer, proxiedUrl);
-        Assert.fail(); // should throw IOException on the previous line
+        String proxiedUrl = httpProxyCacheServer.getProxyUrl(HTTP_DATA_URL);
+        // server can't proxy this url due to it is not alive (can't ping itself), so it returns original url
+        assertThat(proxiedUrl).isEqualTo(HTTP_DATA_URL);
     }
 
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
@@ -390,6 +387,6 @@ public class HttpProxyCacheServerTest extends BaseTest {
     }
 
     private void waitForAsyncTrimming() throws InterruptedException {
-        Thread.sleep(100);
+        Thread.sleep(500);
     }
 }

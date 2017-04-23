@@ -40,8 +40,7 @@ class IgnoreHostProxySelector extends ProxySelector {
     @Override
     public List<Proxy> select(URI uri) {
         boolean ignored = hostToIgnore.equals(uri.getHost()) && portToIgnore == uri.getPort();
-        List<Proxy> proxies = ignored ? NO_PROXY_LIST : defaultProxySelector.select(uri);
-        return proxies;
+        return ignored ? NO_PROXY_LIST : defaultProxySelector.select(uri);
     }
 
     @Override
