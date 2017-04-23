@@ -34,7 +34,7 @@ Note `AndroidVideoCache` works only with **direct urls** to media file, it  [**d
 Just add dependency (`AndroidVideoCache` is available in jcenter):
 ```
 dependencies {
-    compile 'com.danikula:videocache:2.6.4'
+    compile 'com.danikula:videocache:2.7.0'
 }
 ```
 
@@ -140,7 +140,6 @@ HttpProxyCacheServer proxy = HttpProxyCacheServer.Builder(context)
 See `sample` app.
 
 ## Known problems
-- `AndroidVideoCache` [doesn't work](https://github.com/danikula/AndroidVideoCache/issues/28) if wifi or mobile internet connection uses proxy.
 - In some cases clients [can't connect](https://github.com/danikula/AndroidVideoCache/issues/134) to local proxy server ('Error pinging server' error). May be it is result of previous error. Note in this case video will be played, but without caching.
 
 ## Whats new

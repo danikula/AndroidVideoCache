@@ -27,6 +27,7 @@ public interface Source {
      * Read data to byte buffer from source with current offset.
      *
      * @param buffer a buffer to be used for reading data.
+     * @return a count of read bytes
      * @throws ProxyCacheException if error occur while reading source.
      */
     int read(byte[] buffer) throws ProxyCacheException;
