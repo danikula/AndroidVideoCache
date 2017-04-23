@@ -75,9 +75,9 @@ class Pinger {
     }
 
     private List<Proxy> getDefaultProxies() {
-        ProxySelector proxySelector = ProxySelector.getDefault();
         try {
-            return proxySelector.select(new URI("https://github.com"));
+            ProxySelector defaultProxySelector = ProxySelector.getDefault();
+            return defaultProxySelector.select(new URI(getPingUrl()));
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }

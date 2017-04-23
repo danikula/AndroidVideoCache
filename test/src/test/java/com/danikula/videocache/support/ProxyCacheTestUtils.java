@@ -7,8 +7,11 @@ import com.danikula.videocache.HttpUrlSource;
 import com.danikula.videocache.ProxyCacheException;
 import com.danikula.videocache.Source;
 import com.danikula.videocache.sourcestorage.SourceInfoStorage;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
+import org.apache.tools.ant.util.ReflectUtil;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RuntimeEnvironment;
@@ -18,6 +21,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.net.URL;
 import java.util.Random;
 import java.util.UUID;
@@ -31,6 +38,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Alexey Danilov (danikula@gmail.com).
@@ -146,5 +154,23 @@ public class ProxyCacheTestUtils {
         assertThat(matcher.find()).isTrue();
         String portAsString = matcher.group(1);
         return Integer.parseInt(portAsString);
+    }
+
+    public static int getPortWithoutPing(HttpProxyCacheServer server) {
+        return (Integer) ReflectUtil.getField(server, "port");
+    }
+
+    public static void installExternalSystemProxy() {
+        // see proxies list at http://proxylist.hidemyass.com/
+        Proxy systemProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("162.8.230.7", 11180));
+        ProxySelector mockedProxySelector = Mockito.mock(ProxySelector.class);
+        when(mockedProxySelector.select(Mockito.<URI>any())).thenReturn(Lists.newArrayList(systemProxy));
+        ProxySelector.setDefault(mockedProxySelector);
+    }
+
+    public static void resetSystemProxy() {
+        ProxySelector mockedProxySelector = Mockito.mock(ProxySelector.class);
+        when(mockedProxySelector.select(Mockito.<URI>any())).thenReturn(Lists.newArrayList(Proxy.NO_PROXY));
+        ProxySelector.setDefault(mockedProxySelector);
     }
 }

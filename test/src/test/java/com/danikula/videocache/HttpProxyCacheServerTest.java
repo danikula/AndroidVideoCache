@@ -9,6 +9,8 @@ import com.danikula.videocache.file.Md5FileNameGenerator;
 import com.danikula.videocache.support.ProxyCacheTestUtils;
 import com.danikula.videocache.support.Response;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.RuntimeEnvironment;
@@ -31,8 +33,11 @@ import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_
 import static com.danikula.videocache.support.ProxyCacheTestUtils.HTTP_DATA_URL_ONE_REDIRECT;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getFileContent;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.getPort;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.getPortWithoutPing;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.installExternalSystemProxy;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.loadAssetFile;
 import static com.danikula.videocache.support.ProxyCacheTestUtils.readProxyResponse;
+import static com.danikula.videocache.support.ProxyCacheTestUtils.resetSystemProxy;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
@@ -47,6 +52,7 @@ public class HttpProxyCacheServerTest extends BaseTest {
         cacheFolder = ProxyCacheTestUtils.newCacheFile();
         createDirectory(cacheFolder);
         cleanDirectory(cacheFolder);
+        resetSystemProxy();
     }
 
     @Test
@@ -336,6 +342,25 @@ public class HttpProxyCacheServerTest extends BaseTest {
 
         waitForAsyncTrimming();
         assertThat(new File(cacheFolder, fileNameGenerator.generate(HTTP_DATA_URL))).doesNotExist();
+    }
+
+    @Test // https://github.com/danikula/AndroidVideoCache/issues/28
+    public void testWorkWithExternalProxy() throws Exception {
+        installExternalSystemProxy();
+
+        Pair<File, Response> response = readProxyData(HTTP_DATA_URL, 0);
+        assertThat(response.second.data).isEqualTo(loadAssetFile(ASSETS_DATA_NAME));
+    }
+
+    @Test(expected = IOException.class) // https://github.com/danikula/AndroidVideoCache/issues/28
+    public void testDoesNotWorkWithoutCustomProxySelector() throws Exception {
+        HttpProxyCacheServer httpProxyCacheServer = new HttpProxyCacheServer(RuntimeEnvironment.application);
+        // IgnoreHostProxySelector is set in HttpProxyCacheServer constructor. So let reset it by custom.
+        installExternalSystemProxy();
+
+        String proxiedUrl = "http://127.0.0.1:" + getPortWithoutPing(httpProxyCacheServer) + "/" + HTTP_DATA_URL;
+        readProxyResponse(httpProxyCacheServer, proxiedUrl);
+        Assert.fail(); // should throw IOException on the previous line
     }
 
     private Pair<File, Response> readProxyData(String url, int offset) throws IOException {
