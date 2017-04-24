@@ -9,6 +9,7 @@
   - [Disk cache limit](#disk-cache-limit)
   - [Listen caching progress](#listen-caching-progress)
   - [Providing names for cached files](#providing-names-for-cached-files)
+  - [Using exoPlayer](#using-exoplayer)
   - [Sample](#sample)
 - [Known problems](#known-problems)
 - [Whats new](#whats-new)
@@ -19,7 +20,7 @@
 
 ## Why AndroidVideoCache?
 Because there is no sense to download video a lot of times while streaming!
-`AndroidVideoCache` allows to add caching support to your `VideoView/MediaPlayer`, [ExoPlayer](https://github.com/danikula/ExoPlayer/commit/6110be8559f003f98020ada8c5e09691b67aaff4) or any another player with help of single line!
+`AndroidVideoCache` allows to add caching support to your `VideoView/MediaPlayer`, [ExoPlayer](https://github.com/danikula/AndroidVideoCache/tree/exoPlayer) or any another player with help of single line!
 
 ## Features
 - caching to disk during streaming;
@@ -135,6 +136,9 @@ HttpProxyCacheServer proxy = HttpProxyCacheServer.Builder(context)
     .fileNameGenerator(new MyFileNameGenerator())
     .build()
 ```
+
+### Using exoPlayer
+You can use [`exoPlayer`](https://google.github.io/ExoPlayer/) with `AndroidVideoCache`. See `sample` app in [`exoPlayer`](https://github.com/danikula/AndroidVideoCache/tree/exoPlayer) branch. Note [exoPlayer supports](https://github.com/google/ExoPlayer/commit/bd7be1b5e7cc41a59ebbc348d394820fc857db92) cache as well.  
 
 ### Sample
 See `sample` app.
