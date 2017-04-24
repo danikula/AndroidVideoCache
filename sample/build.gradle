@@ -36,6 +36,7 @@ apt {
 
 dependencies {
 //    compile project(':library')
+    compile 'com.google.android.exoplayer:exoplayer:r2.3.1'
     compile 'com.android.support:support-v4:23.1.0'
     compile 'org.androidannotations:androidannotations-api:3.3.2'
     compile 'com.danikula:videocache:2.7.0'
