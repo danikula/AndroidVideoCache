@@ -1,19 +1,17 @@
 package com.danikula.videocache;
 
-import android.text.TextUtils;
-
-import com.danikula.videocache.sourcestorage.SourceInfoStorage;
-import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import android.text.TextUtils;
+import com.danikula.videocache.sourcestorage.SourceInfoStorage;
+import com.danikula.videocache.sourcestorage.SourceInfoStorageFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.danikula.videocache.Preconditions.checkNotNull;
 import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
@@ -125,7 +123,7 @@ public class HttpUrlSource implements Source {
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
-            urlConnection = openConnection(0, 10000);
+            urlConnection = openConnectionForHeader(10000);
             long length = getContentLength(urlConnection);
             String mime = urlConnection.getContentType();
             inputStream = urlConnection.getInputStream();
@@ -141,7 +139,36 @@ public class HttpUrlSource implements Source {
             }
         }
     }
-
+    // only get http header information
+    private HttpURLConnection openConnectionForHeader(int timeout) throws IOException, ProxyCacheException {
+        HttpURLConnection connection;
+        boolean redirected;
+        int redirectCount = 0;
+        String url = this.sourceInfo.url;
+        do {
+            LOG.debug("Open connection for header to " + url);
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            if (timeout > 0) {
+                connection.setConnectTimeout(timeout);
+                connection.setReadTimeout(timeout);
+            }
+            //only get HEAD ,not need BODY，to get header faster information
+            connection.setRequestMethod("HEAD");
+            int code = connection.getResponseCode();
+            redirected = code == HTTP_MOVED_PERM || code == HTTP_MOVED_TEMP || code == HTTP_SEE_OTHER;
+            if (redirected) {
+                url = connection.getHeaderField("Location");
+                LOG.debug("Redirect to:" + url);
+                redirectCount++;
+                connection.disconnect();
+                LOG.debug("Redirect closed:" + url);
+            }
+            if (redirectCount > MAX_REDIRECTS) {
+                throw new ProxyCacheException("Too many redirects: " + redirectCount);
+            }
+        } while (redirected);
+        return connection;
+    }
     private HttpURLConnection openConnection(long offset, int timeout) throws IOException, ProxyCacheException {
         HttpURLConnection connection;
         boolean redirected;
