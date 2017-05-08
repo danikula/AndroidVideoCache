@@ -47,7 +47,7 @@ class Files {
     static void setLastModifiedNow(File file) throws IOException {
         if (file.exists()) {
             long now = System.currentTimeMillis();
-            boolean modified = file.setLastModified(now); // on some devices (e.g. Nexus 5) doesn't work
+            boolean modified = file.setLastModified(now/1000*1000); // on some devices (e.g. Nexus 5) doesn't work
             if (!modified) {
                 modify(file);
                 //if (file.lastModified() < now) {
