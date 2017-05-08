@@ -1,17 +1,16 @@
 package com.danikula.videocache.file;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utils for work with files.
@@ -48,13 +47,13 @@ class Files {
     static void setLastModifiedNow(File file) throws IOException {
         if (file.exists()) {
             long now = System.currentTimeMillis();
-            boolean modified = file.setLastModified(now); // on some devices (e.g. Nexus 5) doesn't work
+            boolean modified = file.setLastModified(now/1000*1000); // on some devices (e.g. Nexus 5) doesn't work
             if (!modified) {
                 modify(file);
-                if (file.lastModified() < now) {
-                    // NOTE: apparently this is a known issue (see: http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified)
-                    LOG.warn("Last modified date {} is not set for file {}", new Date(file.lastModified()), file.getAbsolutePath());
-                }
+                //if (file.lastModified() < now) {
+                //    // NOTE: apparently this is a known issue (see: http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified)
+                //    LOG.warn("Last modified date {} is not set for file {}", new Date(file.lastModified()), file.getAbsolutePath());
+                //}
             }
         }
     }
