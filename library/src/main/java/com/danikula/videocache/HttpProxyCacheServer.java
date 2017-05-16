@@ -3,6 +3,8 @@ package com.danikula.videocache;
 import android.content.Context;
 import android.net.Uri;
 
+import com.danikula.videocache.encrypt.Cipher;
+import com.danikula.videocache.encrypt.NoCipher;
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
@@ -353,6 +355,7 @@ public class HttpProxyCacheServer {
         private DiskUsage diskUsage;
         private SourceInfoStorage sourceInfoStorage;
         private HeaderInjector headerInjector;
+        private Cipher cipher;
 
         public Builder(Context context) {
             this.sourceInfoStorage = SourceInfoStorageFactory.newSourceInfoStorage(context);
@@ -360,6 +363,7 @@ public class HttpProxyCacheServer {
             this.diskUsage = new TotalSizeLruDiskUsage(DEFAULT_MAX_SIZE);
             this.fileNameGenerator = new Md5FileNameGenerator();
             this.headerInjector = new EmptyHeadersInjector();
+            this.cipher = new NoCipher();
         }
 
         /**
@@ -387,6 +391,17 @@ public class HttpProxyCacheServer {
          */
         public Builder fileNameGenerator(FileNameGenerator fileNameGenerator) {
             this.fileNameGenerator = checkNotNull(fileNameGenerator);
+            return this;
+        }
+
+        /**
+         * Overrides default cipher for cached files.
+         *
+         * @param cipher a new cipher, can't be {@code null}.
+         * @return a builder.
+         */
+        public Builder cipher(Cipher cipher) {
+            this.cipher = checkNotNull(cipher);
             return this;
         }
 
@@ -452,8 +467,7 @@ public class HttpProxyCacheServer {
         }
 
         private Config buildConfig() {
-            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage, headerInjector);
+            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage, headerInjector, cipher);
         }
-
     }
 }

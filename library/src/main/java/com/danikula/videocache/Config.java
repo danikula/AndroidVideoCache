@@ -1,5 +1,6 @@
 package com.danikula.videocache;
 
+import com.danikula.videocache.encrypt.Cipher;
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.headers.HeaderInjector;
@@ -19,13 +20,16 @@ class Config {
     public final DiskUsage diskUsage;
     public final SourceInfoStorage sourceInfoStorage;
     public final HeaderInjector headerInjector;
+    public final Cipher cipher;
 
-    Config(File cacheRoot, FileNameGenerator fileNameGenerator, DiskUsage diskUsage, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector) {
+    Config(File cacheRoot, FileNameGenerator fileNameGenerator, DiskUsage diskUsage, SourceInfoStorage sourceInfoStorage,
+           HeaderInjector headerInjector, Cipher cipher) {
         this.cacheRoot = cacheRoot;
         this.fileNameGenerator = fileNameGenerator;
         this.diskUsage = diskUsage;
         this.sourceInfoStorage = sourceInfoStorage;
         this.headerInjector = headerInjector;
+        this.cipher = cipher;
     }
 
     File generateCacheFile(String url) {
