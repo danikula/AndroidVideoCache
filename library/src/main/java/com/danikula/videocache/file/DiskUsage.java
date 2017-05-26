@@ -12,4 +12,6 @@ public interface DiskUsage {
 
     void touch(File file) throws IOException;
 
+    void trim(File folder);
+
 }

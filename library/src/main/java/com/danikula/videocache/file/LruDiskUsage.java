@@ -21,8 +21,19 @@ public abstract class LruDiskUsage implements DiskUsage {
     private final ExecutorService workerThread = Executors.newSingleThreadExecutor();
 
     @Override
+    public void trim(File folder){
+        //folder passed in is the cache folder. Trim this if required
+        workerThread.submit(new TrimCallable(folder));
+    }
+
+    @Override
     public void touch(File file) throws IOException {
         workerThread.submit(new TouchCallable(file));
+    }
+
+    private void trimInBackground(File folder) throws IOException {
+        List<File> files = Files.getLruListFiles(folder);
+        trim(files);
     }
 
     private void touchInBackground(File file) throws IOException {
@@ -60,6 +71,7 @@ public abstract class LruDiskUsage implements DiskUsage {
         return totalSize;
     }
 
+
     private class TouchCallable implements Callable<Void> {
 
         private final File file;
@@ -71,6 +83,21 @@ public abstract class LruDiskUsage implements DiskUsage {
         @Override
         public Void call() throws Exception {
             touchInBackground(file);
+            return null;
+        }
+    }
+
+    private class TrimCallable implements Callable<Void> {
+
+        private final File folder;
+
+        public TrimCallable(File folder) {
+            this.folder = folder;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            trimInBackground(folder);
             return null;
         }
     }
