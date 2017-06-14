@@ -17,4 +17,5 @@ public interface SourceInfoStorage {
 
     void clean();
 
+    void remove(String url);
 }
