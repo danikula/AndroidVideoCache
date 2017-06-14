@@ -183,7 +183,7 @@ public class HttpProxyCacheServer {
 
     public void cleanCache() {
         StorageUtils.cleanDirectory(config.cacheRoot);
-        // TODO: clean database as well
+        config.sourceInfoStorage.clean();
     }
 
     private boolean isAlive() {

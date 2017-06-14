@@ -14,4 +14,7 @@ public interface SourceInfoStorage {
     void put(String url, SourceInfo sourceInfo);
 
     void release();
+
+    void clean();
+
 }
