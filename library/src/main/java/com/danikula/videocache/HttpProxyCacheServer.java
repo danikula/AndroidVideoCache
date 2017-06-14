@@ -181,6 +181,11 @@ public class HttpProxyCacheServer {
         }
     }
 
+    public void cleanCache() {
+        StorageUtils.cleanDirectory(config.cacheRoot);
+        // TODO: clean database as well
+    }
+
     private boolean isAlive() {
         return pinger.ping(3, 70);   // 70+140+280=max~500ms
     }

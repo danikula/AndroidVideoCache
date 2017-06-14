@@ -3,11 +3,9 @@ package com.danikula.videocache.sample;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -15,7 +13,6 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.ViewById;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,13 +45,7 @@ public class MenuActivity extends FragmentActivity {
 
     @Click(R.id.cleanCacheButton)
     void onClearCacheButtonClick() {
-        try {
-
-            Utils.cleanVideoCacheDir(this);
-        } catch (IOException e) {
-            Log.e(null, "Error cleaning cache", e);
-            Toast.makeText(this, "Error cleaning cache", Toast.LENGTH_LONG).show();
-        }
+        App.getProxy(this).cleanCache();
     }
 
     private static final class ListEntry {
