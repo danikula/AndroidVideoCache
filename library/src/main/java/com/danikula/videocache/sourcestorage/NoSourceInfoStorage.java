@@ -21,4 +21,12 @@ public class NoSourceInfoStorage implements SourceInfoStorage {
     @Override
     public void release() {
     }
+
+    @Override
+    public void clean() {
+    }
+
+    @Override
+    public void remove(String url) {
+    }
 }

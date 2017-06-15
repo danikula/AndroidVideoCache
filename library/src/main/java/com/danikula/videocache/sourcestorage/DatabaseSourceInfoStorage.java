@@ -80,6 +80,17 @@ class DatabaseSourceInfoStorage extends SQLiteOpenHelper implements SourceInfoSt
         close();
     }
 
+    @Override
+    public void clean() {
+        getWritableDatabase().delete(TABLE, null, null);
+    }
+
+    @Override
+    public void remove(String url) {
+        checkNotNull(url);
+        getWritableDatabase().delete(TABLE, COLUMN_URL + "=?", new String[]{url});
+    }
+
     private SourceInfo convert(Cursor cursor) {
         return new SourceInfo(
                 cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_URL)),

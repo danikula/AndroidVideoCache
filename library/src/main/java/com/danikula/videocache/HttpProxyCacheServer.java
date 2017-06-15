@@ -181,6 +181,26 @@ public class HttpProxyCacheServer {
         }
     }
 
+    public void cleanCache() {
+        StorageUtils.cleanDirectory(config.cacheRoot);
+        config.sourceInfoStorage.clean();
+    }
+
+    public void removeFromCache(String url) {
+        if(!isCached(url)) return;
+
+        File cacheFile = getCacheFile(url);
+        if(!cacheFile.exists()) return;
+
+        boolean isDeleted = cacheFile.delete();
+        if (!isDeleted) {
+            LOG.warn(String.format("File %s can't be deleted", cacheFile.getAbsolutePath()));
+            return;
+        }
+
+        config.sourceInfoStorage.remove(url);
+    }
+
     private boolean isAlive() {
         return pinger.ping(3, 70);   // 70+140+280=max~500ms
     }
