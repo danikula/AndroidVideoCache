@@ -172,12 +172,14 @@ public class FileCacheTest extends BaseTest {
         assertThat(deletedFile).doesNotExist();
     }
 
-    private void saveAndCompleteCache(DiskUsage diskUsage, byte[] data, File... files) throws ProxyCacheException, IOException {
+    private void saveAndCompleteCache(DiskUsage diskUsage, byte[] data, File... files) throws ProxyCacheException, IOException, InterruptedException {
         for (File file : files) {
             FileCache fileCache = new FileCache(file, diskUsage);
             fileCache.append(data, data.length);
             fileCache.complete();
             assertThat(file).exists();
+            fileCache.close();
+            Thread.sleep(1000); // last modified date wrote in seconds.
         }
     }
 
