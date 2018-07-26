@@ -118,11 +118,15 @@ public class HttpUrlSource implements Source {
 
     @Override
     public int read(byte[] buffer) throws ProxyCacheException {
+        return read(buffer, buffer.length);
+    }
+
+    public int read(byte[] buffer, int length) throws ProxyCacheException {
         if (inputStream == null) {
             throw new ProxyCacheException("Error reading data from " + sourceInfo.url + ": connection is absent!");
         }
         try {
-            return inputStream.read(buffer, 0, buffer.length);
+            return inputStream.read(buffer, 0, length);
         } catch (InterruptedIOException e) {
             throw new InterruptedProxyCacheException("Reading source " + sourceInfo.url + " is interrupted", e);
         } catch (IOException e) {
@@ -198,6 +202,10 @@ public class HttpUrlSource implements Source {
 
     public String getUrl() {
         return sourceInfo.url;
+    }
+
+    public int getResponseCode() throws IOException {
+        return connection.getResponseCode();
     }
 
     @Override
