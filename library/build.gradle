@@ -1,23 +1,14 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.novoda:bintray-release:0.4.0'
-    }
-}
 
 apply plugin: 'com.android.library'
-apply plugin: 'idea'
-apply plugin: 'bintray-release'
+//apply plugin: 'idea'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 26
     buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 23
+        targetSdkVersion 26
         versionCode 22
         versionName '2.7.1'
     }
@@ -28,22 +19,15 @@ android {
     }
 }
 
-idea {
-    module {
-        downloadJavadoc = true
-        downloadSources = true
-    }
-}
+//idea {
+//    module {
+//        downloadJavadoc = true
+//        downloadSources = true
+//    }
+//}
 
 dependencies {
     compile 'org.slf4j:slf4j-android:1.7.21'
 }
 
-publish {
-    userOrg = 'alexeydanilov'
-    groupId = 'com.danikula'
-    artifactId = 'videocache'
-    publishVersion = android.defaultConfig.versionName
-    description = 'Cache support for android VideoView'
-    website = 'https://github.com/danikula/AndroidVideoCache'
-}
+

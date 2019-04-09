@@ -3,8 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.danikula.videocache.test">
 
-    <uses-sdk android:minSdkVersion="18" />
-
     <application />
 
 </manifest>

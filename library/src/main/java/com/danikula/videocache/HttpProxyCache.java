@@ -84,7 +84,7 @@ class HttpProxyCache extends ProxyCache {
     }
 
     private void responseWithoutCache(OutputStream out, long offset) throws ProxyCacheException, IOException {
-        HttpUrlSource newSourceNoCache = new HttpUrlSource(this.source);
+        HttpUrlSource newSourceNoCache = this.source.copy();
         try {
             newSourceNoCache.open((int) offset);
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
