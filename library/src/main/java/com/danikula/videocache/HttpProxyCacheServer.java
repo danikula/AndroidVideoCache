@@ -3,6 +3,7 @@ package com.danikula.videocache;
 import android.content.Context;
 import android.net.Uri;
 
+import com.danikula.videocache.extend.IHttpUrlSourceMaker;
 import com.danikula.videocache.file.DiskUsage;
 import com.danikula.videocache.file.FileNameGenerator;
 import com.danikula.videocache.file.Md5FileNameGenerator;
@@ -353,6 +354,7 @@ public class HttpProxyCacheServer {
         private DiskUsage diskUsage;
         private SourceInfoStorage sourceInfoStorage;
         private HeaderInjector headerInjector;
+        private IHttpUrlSourceMaker sourceMaker;
 
         public Builder(Context context) {
             this.sourceInfoStorage = SourceInfoStorageFactory.newSourceInfoStorage(context);
@@ -420,6 +422,17 @@ public class HttpProxyCacheServer {
         }
 
         /**
+         * Set a http source maker which can build your defined http source.This give you a change to
+         * change the http request,such as sign url at so on.
+         * @param sourceMaker
+         * @return
+         */
+        public Builder sourceMaker(IHttpUrlSourceMaker sourceMaker) {
+            this.sourceMaker = sourceMaker;
+            return this;
+        }
+
+        /**
          * Set custom DiskUsage logic for handling when to keep or clean cache.
          *
          * @param diskUsage a disk usage strategy, cant be {@code null}.
@@ -452,7 +465,7 @@ public class HttpProxyCacheServer {
         }
 
         private Config buildConfig() {
-            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage, headerInjector);
+            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage, headerInjector,sourceMaker);
         }
 
     }

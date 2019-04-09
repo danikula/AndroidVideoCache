@@ -12,7 +12,7 @@ repositories {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
+//apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 23
@@ -27,12 +27,12 @@ android {
     }
 }
 
-apt {
-    arguments {
-        androidManifestFile variant.outputs[0].processResources.manifestFile
-        resourcePackageName android.defaultConfig.applicationId
-    }
-}
+//apt {
+//    arguments {
+//        androidManifestFile variant.outputs[0].processResources.manifestFile
+//        resourcePackageName android.defaultConfig.applicationId
+//    }
+//}
 
 dependencies {
 //    compile project(':library')
@@ -40,5 +40,6 @@ dependencies {
     compile 'org.androidannotations:androidannotations-api:3.3.2'
     compile 'com.danikula:videocache:2.7.1'
     compile 'com.viewpagerindicator:library:2.4.2-SNAPSHOT@aar'
-    apt 'org.androidannotations:androidannotations:3.3.2'
+//    apt 'org.androidannotations:androidannotations:3.3.2'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.12'
 }

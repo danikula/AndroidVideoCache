@@ -33,14 +33,14 @@ import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
  */
 public class HttpUrlSource implements Source {
 
-    private static final Logger LOG = LoggerFactory.getLogger("HttpUrlSource");
+    protected static final Logger LOG = LoggerFactory.getLogger("HttpUrlSource");
 
-    private static final int MAX_REDIRECTS = 5;
-    private final SourceInfoStorage sourceInfoStorage;
-    private final HeaderInjector headerInjector;
-    private SourceInfo sourceInfo;
-    private HttpURLConnection connection;
-    private InputStream inputStream;
+    protected static final int MAX_REDIRECTS = 5;
+    protected final SourceInfoStorage sourceInfoStorage;
+    protected final HeaderInjector headerInjector;
+    protected SourceInfo sourceInfo;
+    protected HttpURLConnection connection;
+    protected InputStream inputStream;
 
     public HttpUrlSource(String url) {
         this(url, SourceInfoStorageFactory.newEmptySourceInfoStorage());
@@ -56,6 +56,12 @@ public class HttpUrlSource implements Source {
         SourceInfo sourceInfo = sourceInfoStorage.get(url);
         this.sourceInfo = sourceInfo != null ? sourceInfo :
                 new SourceInfo(url, Integer.MIN_VALUE, ProxyCacheUtils.getSupposablyMime(url));
+    }
+
+    public HttpUrlSource(SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector)
+    {
+        this.sourceInfoStorage = checkNotNull(sourceInfoStorage);
+        this.headerInjector = checkNotNull(headerInjector);
     }
 
     public HttpUrlSource(HttpUrlSource source) {
