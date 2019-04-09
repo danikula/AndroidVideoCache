@@ -58,16 +58,15 @@ public class HttpUrlSource implements Source {
                 new SourceInfo(url, Integer.MIN_VALUE, ProxyCacheUtils.getSupposablyMime(url));
     }
 
-    public HttpUrlSource(SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector)
-    {
-        this.sourceInfoStorage = checkNotNull(sourceInfoStorage);
-        this.headerInjector = checkNotNull(headerInjector);
-    }
-
     public HttpUrlSource(HttpUrlSource source) {
         this.sourceInfo = source.sourceInfo;
         this.sourceInfoStorage = source.sourceInfoStorage;
         this.headerInjector = source.headerInjector;
+    }
+
+    public HttpUrlSource copy()
+    {
+        return new HttpUrlSource(this);
     }
 
     @Override

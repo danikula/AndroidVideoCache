@@ -10,10 +10,6 @@ public class SourceInfo {
     public final String url;
     public final long length;
     public final String mime;
-    /**
-     * the base url
-     */
-    public String baseUrl;
 
     public SourceInfo(String url, long length, String mime) {
         this.url = url;
