@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Proxy;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -353,6 +354,7 @@ public class HttpProxyCacheServer {
         private DiskUsage diskUsage;
         private SourceInfoStorage sourceInfoStorage;
         private HeaderInjector headerInjector;
+        private Proxy proxy;
 
         public Builder(Context context) {
             this.sourceInfoStorage = SourceInfoStorageFactory.newSourceInfoStorage(context);
@@ -441,6 +443,12 @@ public class HttpProxyCacheServer {
             return this;
         }
 
+
+        public Builder proxy(Proxy proxy) {
+            this.proxy = checkNotNull(proxy);
+            return this;
+        }
+
         /**
          * Builds new instance of {@link HttpProxyCacheServer}.
          *
@@ -452,7 +460,7 @@ public class HttpProxyCacheServer {
         }
 
         private Config buildConfig() {
-            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage, headerInjector);
+            return new Config(cacheRoot, fileNameGenerator, diskUsage, sourceInfoStorage, headerInjector, proxy);
         }
 
     }
