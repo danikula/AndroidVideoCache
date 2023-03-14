@@ -133,7 +133,7 @@ public class MyFileNameGenerator implements FileNameGenerator {
 }
 
 ...
-HttpProxyCacheServer proxy = HttpProxyCacheServer.Builder(context)
+HttpProxyCacheServer proxy = new HttpProxyCacheServer.Builder(context)
     .fileNameGenerator(new MyFileNameGenerator())
     .build()
 ```
