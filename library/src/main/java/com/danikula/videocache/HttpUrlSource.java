@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class HttpUrlSource implements Source {
     private static final int MAX_REDIRECTS = 5;
     private final SourceInfoStorage sourceInfoStorage;
     private final HeaderInjector headerInjector;
+    public final Proxy proxy;
     private SourceInfo sourceInfo;
     private HttpURLConnection connection;
     private InputStream inputStream;
@@ -47,12 +49,13 @@ public class HttpUrlSource implements Source {
     }
 
     public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage) {
-        this(url, sourceInfoStorage, new EmptyHeadersInjector());
+        this(url, sourceInfoStorage, new EmptyHeadersInjector(),null);
     }
 
-    public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector) {
+    public HttpUrlSource(String url, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector, Proxy proxy) {
         this.sourceInfoStorage = checkNotNull(sourceInfoStorage);
         this.headerInjector = checkNotNull(headerInjector);
+        this.proxy = proxy;
         SourceInfo sourceInfo = sourceInfoStorage.get(url);
         this.sourceInfo = sourceInfo != null ? sourceInfo :
                 new SourceInfo(url, Integer.MIN_VALUE, ProxyCacheUtils.getSupposablyMime(url));
@@ -62,6 +65,7 @@ public class HttpUrlSource implements Source {
         this.sourceInfo = source.sourceInfo;
         this.sourceInfoStorage = source.sourceInfoStorage;
         this.headerInjector = source.headerInjector;
+        this.proxy = null;
     }
 
     @Override
@@ -159,7 +163,8 @@ public class HttpUrlSource implements Source {
         String url = this.sourceInfo.url;
         do {
             LOG.debug("Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
-            connection = (HttpURLConnection) new URL(url).openConnection();
+            if (proxy == null)connection = (HttpURLConnection) new URL(url).openConnection();
+            else connection = (HttpURLConnection) new URL(url).openConnection(proxy);
             injectCustomHeaders(connection, url);
             if (offset > 0) {
                 connection.setRequestProperty("Range", "bytes=" + offset + "-");

@@ -6,6 +6,7 @@ import com.danikula.videocache.headers.HeaderInjector;
 import com.danikula.videocache.sourcestorage.SourceInfoStorage;
 
 import java.io.File;
+import java.net.Proxy;
 
 /**
  * Configuration for proxy cache.
@@ -19,13 +20,15 @@ class Config {
     public final DiskUsage diskUsage;
     public final SourceInfoStorage sourceInfoStorage;
     public final HeaderInjector headerInjector;
+    public final Proxy proxy;
 
-    Config(File cacheRoot, FileNameGenerator fileNameGenerator, DiskUsage diskUsage, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector) {
+    Config(File cacheRoot, FileNameGenerator fileNameGenerator, DiskUsage diskUsage, SourceInfoStorage sourceInfoStorage, HeaderInjector headerInjector, Proxy proxy) {
         this.cacheRoot = cacheRoot;
         this.fileNameGenerator = fileNameGenerator;
         this.diskUsage = diskUsage;
         this.sourceInfoStorage = sourceInfoStorage;
         this.headerInjector = headerInjector;
+        this.proxy = proxy;
     }
 
     File generateCacheFile(String url) {
