@@ -87,12 +87,27 @@ class HttpProxyCache extends ProxyCache {
         HttpUrlSource newSourceNoCache = new HttpUrlSource(this.source);
         try {
             newSourceNoCache.open((int) offset);
+
             byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
             int readBytes;
+
+            /* manually advance to the offset if the server ignored the
+            range request and returned the entire body. */
+            if (offset > 0 && newSourceNoCache.getResponseCode() == 200) {
+                int readCount;
+                long remaining = offset;
+                while (remaining > 0) {
+                    readCount = (int) Math.min(DEFAULT_BUFFER_SIZE, offset);
+                    remaining -= newSourceNoCache.read(buffer, readCount);
+                }
+            }
+
+            /* return data after the offset */
             while ((readBytes = newSourceNoCache.read(buffer)) != -1) {
                 out.write(buffer, 0, readBytes);
                 offset += readBytes;
             }
+
             out.flush();
         } finally {
             newSourceNoCache.close();
