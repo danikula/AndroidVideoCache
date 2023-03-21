@@ -101,6 +101,10 @@ class ProxyCache {
         }
     }
 
+    private void notifyCacheError(Throwable throwable){
+        onErrorCache(throwable);
+    }
+
     protected void onCacheAvailable(long cacheAvailable, long sourceLength) {
         boolean zeroLengthSource = sourceLength == 0;
         int percents = zeroLengthSource ? 100 : (int) ((float) cacheAvailable / sourceLength * 100);
@@ -113,6 +117,10 @@ class ProxyCache {
     }
 
     protected void onCachePercentsAvailableChanged(int percentsAvailable) {
+    }
+
+    protected void onErrorCache(Throwable throwable) {
+        // do nothing
     }
 
     private void readSource() {
@@ -139,9 +147,12 @@ class ProxyCache {
         } catch (Throwable e) {
             readSourceErrorsCount.incrementAndGet();
             onError(e);
+            notifyCacheError(e);
         } finally {
             closeSource();
-            notifyNewCacheDataAvailable(offset, sourceAvailable);
+            synchronized (wc) {
+                wc.notifyAll();
+            }
         }
     }
 

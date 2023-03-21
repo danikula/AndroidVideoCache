@@ -23,7 +23,8 @@ class HttpProxyCache extends ProxyCache {
 
     private final HttpUrlSource source;
     private final FileCache cache;
-    private CacheListener listener;
+    private CacheListener cacheListener;
+    private ErrorCacheListener errorListener;
 
     public HttpProxyCache(HttpUrlSource source, FileCache cache) {
         super(source, cache);
@@ -32,7 +33,11 @@ class HttpProxyCache extends ProxyCache {
     }
 
     public void registerCacheListener(CacheListener cacheListener) {
-        this.listener = cacheListener;
+        this.cacheListener = cacheListener;
+    }
+
+    public void registerErrorListener(ErrorCacheListener errorCacheListener) {
+        this.errorListener = errorCacheListener;
     }
 
     public void processRequest(GetRequest request, Socket socket) throws IOException, ProxyCacheException {
@@ -105,8 +110,16 @@ class HttpProxyCache extends ProxyCache {
 
     @Override
     protected void onCachePercentsAvailableChanged(int percents) {
-        if (listener != null) {
-            listener.onCacheAvailable(cache.file, source.getUrl(), percents);
+        if (cacheListener != null) {
+            cacheListener.onCacheAvailable(cache.file, source.getUrl(), percents);
+        }
+    }
+
+    @Override
+    protected void onErrorCache(Throwable throwable) {
+        super.onErrorCache(throwable);
+        if (errorListener != null) {
+            errorListener.onCacheUnavailable(throwable);
         }
     }
 }
