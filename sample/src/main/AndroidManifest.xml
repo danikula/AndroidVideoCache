@@ -22,7 +22,6 @@
         </activity>
         <activity android:name=".SingleVideoActivity_" />
         <activity android:name=".MultipleVideosActivity_" />
-        <activity android:name=".VideoGalleryActivity_" />
         <activity android:name=".SharedCacheActivity_" />
     </application>
 
